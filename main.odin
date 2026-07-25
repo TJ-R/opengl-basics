@@ -74,73 +74,28 @@ main :: proc() {
 	/* ----------------- SHADER INIT ---------------- */
 	shader: Shader
 	init_shader(&shader, "./shaders/shader.vert", "./shaders/shader.frag")
-
-	yellow_shader: Shader
-	fmt.println("------------ BEFORE YELLOW --------------")
-	init_shader(&yellow_shader, "./shaders/shader.vert", "./shaders/yellow.frag")
-	fmt.println("------------ AFTER YELLOW --------------")
-
 	/* ---------------- VERTEX DATA INIT ---------------- */
 
 
 	
 	// odinfmt: disable
-	/*
-	vertices := [4][3]f32{
-		{0.5, 0.5, 0.0}, 
-		{0.5, -0.5, 0.0}, 
-		{-0.5, -0.5, 0.0}, 
-		{-0.5, 0.5, 0.0}
-	}
-	*/
+	// verticesT1 := [4][3]f32{
+	// 	{0.5, 0.5, 0.0}, 
+	// 	{0.5, -0.5, 0.0}, 
+	// 	{-0.5, -0.5, 0.0}, 
+	// 	{-0.5, 0.5, 0.0}
+	// }
 
-	/* Trapezoid but in array buffer VBO
-	vertices := [9][3]f32 {
-		{0.0, 0.5, 0.0},
-		{0.25, 0.0, 0.0}, {-0.25, 0.0, 0.0},
-		{0.5, 0.5, 0.0}, // Tip of rightmost triangle 2
-		{0.75, 0.0, 0.0}, // bottom right of triangle 2
-		{0.25, 0.0, 0.0}, // bottom left of triangle 2
-		{0.25, 0.0, 0.0}, // top of inverted triangle 3
-		{0.0, 0.5, 0.0},
-		{0.5, 0.5, 0.0}
-	}
-	*/
-
+	// With Color Vertex
 	verticesT1 := [3][6]f32 {
 		{0.0, 0.5, 0.0, 1.0, 0.0, 0.0},
-		{0.25, 0.0, 0.0, 0.0, 1.0, 0.0},
-		{-0.25, 0.0, 0.0, 0.0, 0.0, 1.0}
+		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0},
+		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0}
 	}
 	
-	verticesT2 := [3][3]f32 {
-		{0.5, 0.5, 0.0}, // Tip of rightmost triangle
-		{0.75, 0.0, 0.0}, // bottom right of triangle 2
-		{0.25, 0.0, 0.0}, // bottom left of triangle 2
-	}
-
-	/* Trap Using EBO */
-	vertices := [5][3] f32{
-		{0.0, 0.5, 0.0},
-		{0.25, 0.0, 0.0},
-		{-0.25, 0.0, 0.0},
-		{0.5, 0.5, 0.0},
-		{0.75, 0.0, 0.0},
-	}
-
 	/* Two triangle */
-	/*
-	indices := [6]u32{
+	indices := [3]u32{
 		0, 1, 3, // First Triangle
-		1, 2, 3, // Second Triangle
-	}
-	*/
-	
-	/* Trapezoid Indices */
-	indices := [9]u32 {
-		0, 1, 2,
-		1, 3, 4,
-		0, 1, 3
 	}
 
 	// odinfmt: enable
@@ -175,29 +130,6 @@ main :: proc() {
 	//	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
 	//	gl.EnableVertexAttribArray(1)
-
-	boundBuffer: i32
-	gl.GetVertexAttribiv(0, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &boundBuffer)
-	fmt.printf("Bound to VAO0 buffer is: %d\n", boundBuffer)
-
-	/* Do the second triangle in the second VAO (doing two separate buffers) 
-		just because for learning purposes
-	*/
-	gl.BindVertexArray(VAO[1])
-	gl.BindBuffer(gl.ARRAY_BUFFER, VBO[1])
-
-	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, &boundBuffer)
-	fmt.printf("Bound to Array buffer is: %d\n", boundBuffer)
-
-
-	fmt.println(VBO[1])
-	gl.BufferData(gl.ARRAY_BUFFER, size_of(verticesT2), raw_data(verticesT2[:]), gl.STATIC_DRAW)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
-	// THIS ENABLES THE POINTER IN THE VAO the VAO itself doesn't need enabled
-	gl.EnableVertexAttribArray(0)
-
-	gl.GetVertexAttribiv(0, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &boundBuffer)
-	fmt.printf("Bound to VAO1 buffer is: %d\n", boundBuffer)
 
 	// Unbinding from ARRAY_BUFFER can do this since VAO is already tracking
 	// the VBO
@@ -253,16 +185,6 @@ main :: proc() {
 		// fmt.printf("Frame count: %d\n", frames)
 		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
 
-
-		// Shader Exercise 2 Start
-		// Adjusting offset of triangles by updating via a uniform
-
-		// Only affecting the green triangle since I am looking at the shader
-		// I am using for the green triangle
-		hOffsetLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("hOffset"))
-		gl.Uniform1f(hOffsetLoc, 0)
-		// Shader Exercise 2 End
-
 		// don't technically need to bind it every time since only one
 		gl.BindVertexArray(VAO[0])
 
@@ -272,17 +194,6 @@ main :: proc() {
 
 		// primitive type, starting index of vertex array, how many vertices
 		// Drawing using VBO + VAO
-		gl.DrawArrays(gl.TRIANGLES, 0, 3)
-
-		use_shader(&yellow_shader)
-		// Shader Exercise 2 Start (Yellow Triangle)
-		hOffsetLoc = gl.GetUniformLocation(yellow_shader.ID, strings.clone_to_cstring("hOffset"))
-		gl.Uniform1f(hOffsetLoc, -1.25)
-		// Shader Exercise 2 End
-
-		shader_set_vec4f(&yellow_shader, "yellowColor", 0.7, 0.6, 0.2, 1.0)
-		// Draw next VertexArray
-		gl.BindVertexArray(VAO[1])
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Drawing using indices in EBO, Data in VBO and VAO
@@ -303,7 +214,6 @@ main :: proc() {
 	gl.DeleteVertexArrays(2, raw_data(VAO[:]))
 	gl.DeleteBuffers(2, raw_data(VBO[:]))
 	gl.DeleteProgram(shader.ID)
-	gl.DeleteProgram(yellow_shader.ID)
 
 	sdl.Quit()
 	return

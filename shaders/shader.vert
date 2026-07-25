@@ -13,7 +13,7 @@ uniform float hOffset;
 
 void main()
 {
-	gl_Position = vec4(aPos.x + hOffset, aPos.y + (hOffset/2.0), aPos.z, 1.0);
+	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 	// vertexColor = vec4(0.5, 0.0, 0.0, 1.0);
 	// appColor = aColor;
 
