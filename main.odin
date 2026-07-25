@@ -250,7 +250,7 @@ main :: proc() {
 
 		use_shader(&shader)
 
-		fmt.printf("Frame count: %d\n", frames)
+		// fmt.printf("Frame count: %d\n", frames)
 		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
 
 
@@ -260,7 +260,7 @@ main :: proc() {
 		// Only affecting the green triangle since I am looking at the shader
 		// I am using for the green triangle
 		hOffsetLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("hOffset"))
-		gl.Uniform1f(hOffsetLoc, 0.50)
+		gl.Uniform1f(hOffsetLoc, 0)
 		// Shader Exercise 2 End
 
 		// don't technically need to bind it every time since only one

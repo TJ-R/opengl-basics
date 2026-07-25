@@ -23,6 +23,7 @@ init_shader :: proc(shader: ^Shader, vertexPath, fragmentPath: string) {
 		fmt.eprintf("ERROR::SHADER::VERTEX::COMPILATION_FAILED %s\n", err_msg)
 		return
 	}
+	defer delete(err_msg)
 	fmt.println("[DEBUG] Vertex Shader Compilation Done")
 
 
@@ -99,8 +100,13 @@ compile_shader :: proc(src: []byte, shaderType: u32) -> (u32, i32, string) {
 	// If shader failed taking a guess that 0 is false since success is i32
 	if (success == i32(gl.FALSE)) {
 		gl.GetShaderInfoLog(shader, 512, &logLength, raw_data(infoLog[:]))
-		// Find num bytes before terminal
-		err_msg := string(infoLog[:logLength])
+
+		// !!!!! Can't just cast to string if I want to return it
+		// just casting would stay as a pointer to the memory in the stack
+		// when returning from the function this stack memory would get popped
+		// off meaning the pointer is pointing at nothing (null). Instead make
+		// a copy and return it instead
+		err_msg := strings.clone_from_bytes(infoLog[:logLength])
 		return shader, success, err_msg
 	}
 
