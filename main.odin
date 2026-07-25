@@ -172,9 +172,9 @@ main :: proc() {
 
 	// 3. Set Vertext Attribute Pointer
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
+	//	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
-	gl.EnableVertexAttribArray(1)
+	//	gl.EnableVertexAttribArray(1)
 
 	boundBuffer: i32
 	gl.GetVertexAttribiv(0, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &boundBuffer)
@@ -219,9 +219,13 @@ main :: proc() {
 	// Wireframe mode uncomment below
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
+	frames := 0
 	running := true
 	dragging := false
+	targeted_fps: u64 = 1000 / 240
 	for running {
+		start := sdl.GetTicks()
+		frames += 1
 		event: sdl.Event
 		for sdl.PollEvent(&event) {
 			#partial switch event.type {
@@ -232,7 +236,6 @@ main :: proc() {
 				gl.Viewport(0, 0, event.window.data1, event.window.data2)
 			}
 		}
-
 		// Sets the color of the screen durning the clear screen
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		// Clears the screen using the Clear Color
@@ -240,12 +243,18 @@ main :: proc() {
 
 		// 4. Draw step
 		/*  This is just some code to pass a calculated color into frag shader */
-		timeValue := sdl.GetTicks() / 1000.0 // Time in seconds
-		greenValue := (math.sin(f32(timeValue)) / 2) + 0.5
+		timeValue := f32(sdl.GetTicks()) / 1000.0 // Time in seconds
+
+		fmt.printf("Current Time Value: %d\n", sdl.GetTicks())
+
+		greenValue := (math.sin(timeValue) / 2.0) + 0.5
 		vertexColorLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("uniColor"))
 
 		use_shader(&shader)
-		// gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
+
+		fmt.printf("Frame count: %d\n", frames)
+		fmt.printf("Updaing color to %f\n", greenValue)
+		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
 
 		// don't technically need to bind it every time since only one
 		gl.BindVertexArray(VAO[0])
@@ -272,54 +281,10 @@ main :: proc() {
 		sdl.GL_SwapWindow(window)
 
 
-		/* Mouse Tracking */
-		//		mouseX, mouseY: f32
-		//		buttonState := sdl.GetGlobalMouseState(&mouseX, &mouseY)
-		//		normalizedX := normalize_global_coordinate(mouseX, 0, f32(width))
-		//		// Have to invert the Y
-		//		normalizedY := normalize_global_coordinate(mouseY, 0, f32(height)) * -1
-		//		fmt.printf("Normalized X: %f\n NormalizedY: %f\n", normalizedX, normalizedY)
-		//		leftPressed := sdl.MouseButtonFlags.LEFT in buttonState
-		//		fmt.printf("Left Mouse Btn Down: %t\n", leftPressed)
-
-		// BROKEN FOR NOW SINCE I WENT FROM [3][3] to [3][6]
-		// Need to make code more maliable
-		// Check if shape is "grabbed"
-		//		if (leftPressed) {
-		//			fmt.printf(
-		//				"Cursor inside: %t\n",
-		//				is_inside(Point2d{normalizedX, normalizedY}, verticesT1),
-		//			)
-		//
-		//			if (is_inside(Point2d{normalizedX, normalizedY}, verticesT1)) {
-		//				dragging = true
-		//			}
-		//
-		//			// follow cursor
-		//			// put triangle in center of cursor
-		//			// calculate new vertices based on normalized mouse cords
-		//			if (dragging) {
-		//							// odinfmt: disable
-		//				verticesT1 = [3][3]f32{
-		//					{0.0+normalizedX, 0.5+normalizedY, 0.0},
-		//					{0.25+normalizedX, 0.0+normalizedY, 0.0},
-		//					{-0.25+normalizedX, 0.0+normalizedY, 0.0}
-		//				}
-		//				// odinfmt: enable
-		//				gl.BindBuffer(gl.ARRAY_BUFFER, VBO[0])
-		//				gl.BufferData(
-		//					gl.ARRAY_BUFFER,
-		//					size_of(verticesT1),
-		//					raw_data(verticesT1[:]),
-		//					gl.DYNAMIC_DRAW,
-		//				)
-		//			}
-		//		} else {
-		//			dragging = false
-		//			// drop
-		//		}
-
 		gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+
+		elapsed_time := sdl.GetTicks() - start
+		sdl.Delay(u32(targeted_fps - elapsed_time))
 	}
 
 	// Clean up
@@ -331,3 +296,51 @@ main :: proc() {
 	sdl.Quit()
 	return
 }
+
+// track_mouse :: proc() {
+// 	/* Mouse Tracking */
+// 	mouseX, mouseY: f32
+// 	buttonState := sdl.GetGlobalMouseState(&mouseX, &mouseY)
+// 	normalizedX := normalize_global_coordinate(mouseX, 0, f32(width))
+// 	// Have to invert the Y
+// 	normalizedY := normalize_global_coordinate(mouseY, 0, f32(height)) * -1
+// 	fmt.printf("Normalized X: %f\n NormalizedY: %f\n", normalizedX, normalizedY)
+// 	leftPressed := sdl.MouseButtonFlags.LEFT in buttonState
+// 	fmt.printf("Left Mouse Btn Down: %t\n", leftPressed)
+//
+// 	// BROKEN FOR NOW SINCE I WENT FROM [3][3] to [3][6]
+// 	// Need to make code more maliable
+// 	// Check if shape is "grabbed"
+// 	if (leftPressed) {
+// 		fmt.printf("Cursor inside: %t\n", is_inside(Point2d{normalizedX, normalizedY}, verticesT1))
+//
+// 		if (is_inside(Point2d{normalizedX, normalizedY}, verticesT1)) {
+// 			dragging = true
+// 		}
+//
+// 		// follow cursor
+// 		// put triangle in center of cursor
+// 		// calculate new vertices based on normalized mouse cords
+// 		if (dragging) {
+// 							// odinfmt: disable
+// 					verticesT1 = [3][3]f32{
+// 						{0.0+normalizedX, 0.5+normalizedY, 0.0},
+// 						{0.25+normalizedX, 0.0+normalizedY, 0.0},
+// 						{-0.25+normalizedX, 0.0+normalizedY, 0.0}
+// 					}
+// 					// odinfmt: enable
+// 			gl.BindBuffer(gl.ARRAY_BUFFER, VBO[0])
+// 			gl.BufferData(
+// 				gl.ARRAY_BUFFER,
+// 				size_of(verticesT1),
+// 				raw_data(verticesT1[:]),
+// 				gl.DYNAMIC_DRAW,
+// 			)
+// 		}
+// 	} else {
+// 		dragging = false
+// 		// drop
+// 	}
+//
+//
+// }
