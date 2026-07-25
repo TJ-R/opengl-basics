@@ -5,9 +5,11 @@ layout (location = 1) in vec3 aColor;
 // out vec4 vertexColor;
 out vec3 appColor;
 
+uniform float hOffset;
+
 void main()
 {
-	gl_Position = vec4(aPos.x, -1.0 * aPos.y, aPos.z, 1.0);
+	gl_Position = vec4(aPos.x + hOffset, aPos.y, aPos.z, 1.0);
 	// vertexColor = vec4(0.5, 0.0, 0.0, 1.0);
 	appColor = aColor;
 }

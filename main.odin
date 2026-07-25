@@ -245,16 +245,23 @@ main :: proc() {
 		/*  This is just some code to pass a calculated color into frag shader */
 		timeValue := f32(sdl.GetTicks()) / 1000.0 // Time in seconds
 
-		fmt.printf("Current Time Value: %d\n", sdl.GetTicks())
-
 		greenValue := (math.sin(timeValue) / 2.0) + 0.5
 		vertexColorLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("uniColor"))
 
 		use_shader(&shader)
 
 		fmt.printf("Frame count: %d\n", frames)
-		fmt.printf("Updaing color to %f\n", greenValue)
 		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
+
+
+		// Shader Exercise 2 Start
+		// Adjusting offset of triangles by updating via a uniform
+
+		// Only affecting the green triangle since I am looking at the shader
+		// I am using for the green triangle
+		hOffsetLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("hOffset"))
+		gl.Uniform1f(hOffsetLoc, 0.50)
+		// Shader Exercise 2 End
 
 		// don't technically need to bind it every time since only one
 		gl.BindVertexArray(VAO[0])
@@ -268,6 +275,11 @@ main :: proc() {
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		use_shader(&yellow_shader)
+		// Shader Exercise 2 Start (Yellow Triangle)
+		hOffsetLoc = gl.GetUniformLocation(yellow_shader.ID, strings.clone_to_cstring("hOffset"))
+		gl.Uniform1f(hOffsetLoc, -1.25)
+		// Shader Exercise 2 End
+
 		shader_set_vec4f(&yellow_shader, "yellowColor", 0.7, 0.6, 0.2, 1.0)
 		// Draw next VertexArray
 		gl.BindVertexArray(VAO[1])
