@@ -20,7 +20,7 @@ void main()
 	// FragColor = texture(ourTexture, texCoord) * vec4(appColor, 1.0f);
 
 	// Combine 2 textures
-	FragColor = mix(texture(ourTexture, texCoord), texture(faceTexture, texCoord), 0.2);
+	FragColor = mix(texture(ourTexture, texCoord), texture(faceTexture, texCoord), 0.5);
 
 	//FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 	//FragColor = vec4(uniColor);
