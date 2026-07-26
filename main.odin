@@ -5,6 +5,7 @@ import "core:math"
 import "core:strings"
 import gl "vendor:OpenGL"
 import sdl "vendor:sdl3"
+import stbi "vendor:stb/image"
 
 /*
 * Really long breakdown of my understanding of how this seems to work
@@ -74,12 +75,129 @@ main :: proc() {
 	/* ----------------- SHADER INIT ---------------- */
 	shader: Shader
 	init_shader(&shader, "./shaders/shader.vert", "./shaders/shader.frag")
+
+	/* ----------------- TEXTURE LOAD --------------- */
+	// Images start with 0.0 at top. OpenGL expects 0.0 to be at bottom
+	stbi.set_flip_vertically_on_load(1)
+
+	box_texture: u32
+	// Number of textures, where to slot the ids
+	gl.GenTextures(1, &box_texture)
+	gl.BindTexture(gl.TEXTURE_2D, box_texture)
+
+	// Set parameters
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	tex_width, tex_height, nrChannels: i32
+	// Get texture width, height, and number of color channels
+
+	texture_data: [^]byte = stbi.load(
+		"textures/container.jpg",
+		&tex_width,
+		&tex_height,
+		&nrChannels,
+		0,
+	)
+
+	// Wrap it so we don't try and operate on unbound memory
+	if (texture_data != nil) {
+		// Binding it so the following gl commands use it much like
+		// binding vbo or vao
+		gl.TexImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.RGB,
+			tex_width,
+			tex_height,
+			0,
+			gl.RGB,
+			gl.UNSIGNED_BYTE,
+			texture_data,
+		)
+
+		gl.GenerateMipmap(gl.TEXTURE_2D)
+	} else {
+		fmt.println("Failed to load texture")
+	}
+
+
+	// Unbind TEXTURE_2D till we need it
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+
+	// Texture is now bound to the to the location of box_texture
+	// so we can free the memory since we don't need the image anymore
+	stbi.image_free(texture_data)
+
+	/* ----------- Loading Second Texture ---------- */
+	// Just copying and pasting above for now to load a second texture
+	// TODO BREAK THIS OUT INTO ITS OWN FUNCTION OR SOMETHING
+	face_texture: u32
+	// Number of textures, where to slot the ids
+	gl.GenTextures(1, &face_texture)
+
+	// Activating the second texture unit
+	// Guarenteed to have 0-15 units (16 total)
+	// To make it so we have multiple textures available in the shaders
+	// we need to bind to a different texture unit's texture 2D socket
+	// I imagine I actually don't need to activate texture 1 here at all
+	// just when binding before using in the loop
+	// gl.ActiveTexture(gl.TEXTURE1)
+	gl.BindTexture(gl.TEXTURE_2D, face_texture)
+
+	// Set parameters
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	face_width, face_height, face_nrChannels: i32
+	// Get texture width, height, and number of color channels
+	face_texture_data: [^]byte = stbi.load(
+		"textures/awesomeface.png",
+		&face_width,
+		&face_height,
+		&face_nrChannels,
+		0,
+	)
+
+	// Wrap it so we don't try and operate on unbound memory
+	if (face_texture_data != nil) {
+		// Binding it so the following gl commands use it much like
+		// binding vbo or vao
+		gl.TexImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.RGB,
+			face_width,
+			face_height,
+			0,
+			gl.RGBA,
+			gl.UNSIGNED_BYTE,
+			face_texture_data,
+		)
+
+		gl.GenerateMipmap(gl.TEXTURE_2D)
+	} else {
+		fmt.println("Failed to load texture")
+	}
+
+
+	// Unbind TEXTURE_2D till we need it
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+
+	// Texture is now bound to the to the location of box_texture
+	// so we can free the memory since we don't need the image anymore
+	stbi.image_free(face_texture_data)
+
 	/* ---------------- VERTEX DATA INIT ---------------- */
 
 
 	
 	// odinfmt: disable
-	// verticesT1 := [4][3]f32{
+	// vertices := [4][3]f32{
 	// 	{0.5, 0.5, 0.0}, 
 	// 	{0.5, -0.5, 0.0}, 
 	// 	{-0.5, -0.5, 0.0}, 
@@ -87,15 +205,18 @@ main :: proc() {
 	// }
 
 	// With Color Vertex
-	verticesT1 := [3][6]f32 {
-		{0.0, 0.5, 0.0, 1.0, 0.0, 0.0},
-		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0},
-		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0}
+	// With Texture Cords S and T
+	vertices := [4][8]f32 {
+		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
+		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
+		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
+		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
 	}
 	
 	/* Two triangle */
-	indices := [3]u32{
+	indices := [6]u32{
 		0, 1, 3, // First Triangle
+		1, 2, 3, // Second Triangle
 	}
 
 	// odinfmt: enable
@@ -117,7 +238,7 @@ main :: proc() {
 
 	// 2. Copy and Bind VBO
 	gl.BindBuffer(gl.ARRAY_BUFFER, VBO[0])
-	gl.BufferData(gl.ARRAY_BUFFER, size_of(verticesT1), raw_data(verticesT1[:]), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices[:]), gl.STATIC_DRAW)
 
 	// Same thing for an element buffer object (EBO)
 	// TODO if this flips its shit its because I tried to element draw with current
@@ -126,10 +247,12 @@ main :: proc() {
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), raw_data(indices[:]), gl.STATIC_DRAW)
 
 	// 3. Set Vertext Attribute Pointer
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
-	//	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 3 * size_of(f32))
+	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
-	//	gl.EnableVertexAttribArray(1)
+	gl.EnableVertexAttribArray(1)
+	gl.EnableVertexAttribArray(2)
 
 	// Unbinding from ARRAY_BUFFER can do this since VAO is already tracking
 	// the VBO
@@ -148,8 +271,15 @@ main :: proc() {
 	fmt.println("[DEBUG] All VAO and VBO init and binding done")
 
 
+	// Set shader then set uniform values
+	// 0 and 1 here refer to the texture unit integer
+	use_shader(&shader)
+	shader_set_int(&shader, "ourTexture", 0)
+	shader_set_int(&shader, "faceTexture", 1)
+
+
 	// Wireframe mode uncomment below
-	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	frames := 0
 	running := true
@@ -185,6 +315,12 @@ main :: proc() {
 		// fmt.printf("Frame count: %d\n", frames)
 		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
 
+
+		gl.ActiveTexture(gl.TEXTURE0)
+		gl.BindTexture(gl.TEXTURE_2D, box_texture)
+		gl.ActiveTexture(gl.TEXTURE1)
+		gl.BindTexture(gl.TEXTURE_2D, face_texture)
+
 		// don't technically need to bind it every time since only one
 		gl.BindVertexArray(VAO[0])
 
@@ -194,11 +330,11 @@ main :: proc() {
 
 		// primitive type, starting index of vertex array, how many vertices
 		// Drawing using VBO + VAO
-		gl.DrawArrays(gl.TRIANGLES, 0, 3)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Drawing using indices in EBO, Data in VBO and VAO
 		// unsigned int here is u32 I had uint so it wouldn't run
-		// gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 		gl.BindVertexArray(0) // could unbind it every time
 
 		sdl.GL_SwapWindow(window)
@@ -234,9 +370,9 @@ main :: proc() {
 // 	// Need to make code more maliable
 // 	// Check if shape is "grabbed"
 // 	if (leftPressed) {
-// 		fmt.printf("Cursor inside: %t\n", is_inside(Point2d{normalizedX, normalizedY}, verticesT1))
+// 		fmt.printf("Cursor inside: %t\n", is_inside(Point2d{normalizedX, normalizedY}, vertices))
 //
-// 		if (is_inside(Point2d{normalizedX, normalizedY}, verticesT1)) {
+// 		if (is_inside(Point2d{normalizedX, normalizedY}, vertices)) {
 // 			dragging = true
 // 		}
 //
@@ -245,7 +381,7 @@ main :: proc() {
 // 		// calculate new vertices based on normalized mouse cords
 // 		if (dragging) {
 // 							// odinfmt: disable
-// 					verticesT1 = [3][3]f32{
+// 					vertices = [3][3]f32{
 // 						{0.0+normalizedX, 0.5+normalizedY, 0.0},
 // 						{0.25+normalizedX, 0.0+normalizedY, 0.0},
 // 						{-0.25+normalizedX, 0.0+normalizedY, 0.0}
@@ -254,8 +390,8 @@ main :: proc() {
 // 			gl.BindBuffer(gl.ARRAY_BUFFER, VBO[0])
 // 			gl.BufferData(
 // 				gl.ARRAY_BUFFER,
-// 				size_of(verticesT1),
-// 				raw_data(verticesT1[:]),
+// 				size_of(vertices),
+// 				raw_data(vertices[:]),
 // 				gl.DYNAMIC_DRAW,
 // 			)
 // 		}
