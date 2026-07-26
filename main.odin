@@ -86,8 +86,8 @@ main :: proc() {
 	gl.BindTexture(gl.TEXTURE_2D, box_texture)
 
 	// Set parameters
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
@@ -198,7 +198,7 @@ main :: proc() {
 	
 	// odinfmt: disable
 	// vertices := [4][3]f32{
-	// 	{0.5, 0.5, 0.0}, 
+	// 	{0.5, 0.5, 0.0}, xperiment with the different texture wrapping methods by specifying texture coordinates in the range 0.0f to 2.0
 	// 	{0.5, -0.5, 0.0}, 
 	// 	{-0.5, -0.5, 0.0}, 
 	// 	{-0.5, 0.5, 0.0}
@@ -207,10 +207,10 @@ main :: proc() {
 	// With Color Vertex
 	// With Texture Cords S and T
 	vertices := [4][8]f32 {
-		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
-		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
+		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0}, // Top Right
+		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0}, // Bottom Right
 		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
-		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
+		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0}, // Top Left
 	}
 	
 	/* Two triangle */
