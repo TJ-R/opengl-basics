@@ -88,8 +88,8 @@ main :: proc() {
 	// Set parameters
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	tex_width, tex_height, nrChannels: i32
 	// Get texture width, height, and number of color channels
@@ -149,8 +149,8 @@ main :: proc() {
 	// Set parameters
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	face_width, face_height, face_nrChannels: i32
 	// Get texture width, height, and number of color channels
@@ -205,20 +205,12 @@ main :: proc() {
 
 	// With Color Vertex
 	// With Texture Cords S and T
-	// vertices := [4][8]f32 {
-	// 	{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
-	// 	{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
-	// 	{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
-	// 	{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
-	// }
-
 	vertices := [4][8]f32 {
-		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.55, 0.55}, // Top Right
-		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 0.55, 0.45}, // Bottom Right
-		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.45, 0.45}, // Bottom Left
-		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.45, 0.55}, // Top Left
+		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
+		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
+		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
+		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
 	}
-
 
 	/* Two triangle */
 	indices := [6]u32{
@@ -292,6 +284,7 @@ main :: proc() {
 	running := true
 	dragging := false
 	targeted_fps: u64 = 1000 / 240
+	mix: f32 = 0.2
 	for running {
 		start := sdl.GetTicks()
 		frames += 1
@@ -303,6 +296,15 @@ main :: proc() {
 				break
 			case .WINDOW_RESIZED:
 				gl.Viewport(0, 0, event.window.data1, event.window.data2)
+			case .KEY_DOWN:
+				{
+					switch event.key.key {
+					case sdl.K_UP:
+						mix += .1
+					case sdl.K_DOWN:
+						mix -= .1
+					}
+				}
 			}
 		}
 		// Sets the color of the screen durning the clear screen
@@ -316,11 +318,12 @@ main :: proc() {
 
 		greenValue := (math.sin(timeValue) / 2.0) + 0.5
 		vertexColorLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring("uniColor"))
-
 		use_shader(&shader)
 
 		// fmt.printf("Frame count: %d\n", frames)
 		gl.Uniform4f(vertexColorLoc, 0.0, greenValue, 0.0, 1.0)
+
+		shader_set_float(&shader, "textureMix", mix)
 
 
 		gl.ActiveTexture(gl.TEXTURE0)

@@ -7,6 +7,7 @@ in vec2 texCoord;
 //in vec3 vertexPos;
 
 uniform vec4 uniColor;
+uniform float textureMix;
 
 uniform sampler2D ourTexture;
 uniform sampler2D faceTexture;
@@ -21,7 +22,7 @@ void main()
 
 	// Combine 2 textures
 	// FragColor = mix(texture(ourTexture, texCoord), texture(faceTexture, texCoord), 0.2);
-	FragColor = mix(texture(ourTexture, texCoord), texture(faceTexture, texCoord), 0.2);
+	FragColor = mix(texture(ourTexture, texCoord), texture(faceTexture, texCoord), textureMix);
 
 	//FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 	//FragColor = vec4(uniColor);
