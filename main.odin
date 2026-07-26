@@ -86,10 +86,10 @@ main :: proc() {
 	gl.BindTexture(gl.TEXTURE_2D, box_texture)
 
 	// Set parameters
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_BORDER)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
 	tex_width, tex_height, nrChannels: i32
 	// Get texture width, height, and number of color channels
@@ -147,14 +147,10 @@ main :: proc() {
 	gl.BindTexture(gl.TEXTURE_2D, face_texture)
 
 	// Set parameters
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_BORDER)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-
-
-	borderColor: [4]f32 = {0.0, 1.0, 0.0, 1.0}
-	gl.TexParameterfv(gl.TEXTURE_2D, gl.TEXTURE_BORDER_COLOR, raw_data(borderColor[:]))
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
 	face_width, face_height, face_nrChannels: i32
 	// Get texture width, height, and number of color channels
@@ -209,13 +205,21 @@ main :: proc() {
 
 	// With Color Vertex
 	// With Texture Cords S and T
+	// vertices := [4][8]f32 {
+	// 	{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
+	// 	{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
+	// 	{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
+	// 	{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
+	// }
+
 	vertices := [4][8]f32 {
-		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0}, // Top Right
-		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0}, // Bottom Right
-		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
-		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0}, // Top Left
+		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.55, 0.55}, // Top Right
+		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 0.55, 0.45}, // Bottom Right
+		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.45, 0.45}, // Bottom Left
+		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.45, 0.55}, // Top Left
 	}
-	
+
+
 	/* Two triangle */
 	indices := [6]u32{
 		0, 1, 3, // First Triangle
