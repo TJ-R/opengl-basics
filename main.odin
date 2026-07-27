@@ -282,6 +282,9 @@ main :: proc() {
 	frames := 0
 	running := true
 	dragging := false
+
+	// Seems like locking to 60 fixed this on my laptop
+	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
 	mix: f32 = 0.2
 	for running {
@@ -356,8 +359,7 @@ main :: proc() {
 		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Drawing using indices in EBO, Data in VBO and VAO
-		// unsigned int here is u32 I had uint so it wouldn't run
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		// unsigned int here is u32 I had uint so it wouldn't run gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 		gl.BindVertexArray(0) // could unbind it every time
 
 		sdl.GL_SwapWindow(window)
