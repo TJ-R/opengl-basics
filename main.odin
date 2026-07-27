@@ -282,7 +282,7 @@ main :: proc() {
 	frames := 0
 	running := true
 	dragging := false
-	targeted_fps: u64 = 1000 / 240
+	targeted_fps: u64 = 1000 / 60
 	mix: f32 = 0.2
 	for running {
 		start := sdl.GetTicks()
@@ -330,13 +330,13 @@ main :: proc() {
 		trans := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
 		// Apply tranformations to it
 
-		// trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
-		// fmt.println("Transforming")
-		// trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
-		// trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
-		// transLoc := gl.GetUniformLocation(shader.ID, "transform")
-		// gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
-		// fmt.println("Done Transforming")
+		trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
+		fmt.println("Transforming")
+		trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
+		trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
+		transLoc := gl.GetUniformLocation(shader.ID, "transform")
+		gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
+		fmt.println("Done Transforming")
 
 
 		gl.ActiveTexture(gl.TEXTURE0)
