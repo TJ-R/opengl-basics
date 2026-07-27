@@ -2,6 +2,7 @@ package main
 
 import "core:fmt"
 import "core:math"
+import "core:math/linalg"
 import "core:strings"
 import gl "vendor:OpenGL"
 import sdl "vendor:sdl3"
@@ -277,9 +278,20 @@ main :: proc() {
 	shader_set_int(&shader, "faceTexture", 1)
 
 
+	// Transformations (don't have glm using built in math/linalg)
+	// Make a tranformation matrix
+	trans := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
+
+	// Apply tranformations to it
+
+	trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
+	trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
+	transLoc := gl.GetUniformLocation(shader.ID, "transform")
+	gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
+
+
 	// Wireframe mode uncomment below
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-
 	frames := 0
 	running := true
 	dragging := false

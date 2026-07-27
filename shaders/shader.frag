@@ -2,7 +2,7 @@
 out vec4 FragColor;
 
 // in vec4 vertexColor;
-in vec3 appColor;
+// in vec3 appColor;
 in vec2 texCoord;
 //in vec3 vertexPos;
 
