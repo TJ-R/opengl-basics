@@ -333,13 +333,12 @@ main :: proc() {
 		trans := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
 		// Apply tranformations to it
 
-		trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
-		fmt.println("Transforming")
+		//trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
+		// trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
+		trans *= linalg.matrix4_translate_f32([3]f32{0.5, -0.5, 0.0})
 		trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
-		trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
 		transLoc := gl.GetUniformLocation(shader.ID, "transform")
 		gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
-		fmt.println("Done Transforming")
 
 
 		gl.ActiveTexture(gl.TEXTURE0)
@@ -359,7 +358,25 @@ main :: proc() {
 		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
 		// Drawing using indices in EBO, Data in VBO and VAO
-		// unsigned int here is u32 I had uint so it wouldn't run gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		// unsigned int here is u32 I had uint so it wouldn't run
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+
+		// Doing a new set of tranformations
+		trans = linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
+		// Apply tranformations to it
+		//trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
+		trans *= linalg.matrix4_translate_f32([3]f32{-0.5, 0.5, 0.0})
+
+		trans *= linalg.matrix4_scale_f32(
+			[3]f32{linalg.sin(timeValue), linalg.sin(timeValue), linalg.sin(timeValue)},
+		)
+		// trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
+		gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
+
+
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+
+
 		gl.BindVertexArray(0) // could unbind it every time
 
 		sdl.GL_SwapWindow(window)
