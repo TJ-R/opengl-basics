@@ -376,7 +376,6 @@ main :: proc() {
 
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 
-
 		gl.BindVertexArray(0) // could unbind it every time
 
 		sdl.GL_SwapWindow(window)
