@@ -34,6 +34,8 @@ main :: proc() {
 		return
 	}
 
+	fmt.println(sdl.GetCurrentVideoDriver())
+
 	fmt.println("[Debug] Video Initialized")
 
 	// Setting the OpenGL setting the version and match
@@ -43,7 +45,14 @@ main :: proc() {
 	sdl.GL_SetAttribute(.CONTEXT_MINOR_VERSION, 3)
 	sdl.GL_SetAttribute(.CONTEXT_PROFILE_MASK, i32(sdl.GL_CONTEXT_PROFILE_CORE))
 
-	window := sdl.CreateWindow("Test", 1280, 720, {.OPENGL})
+	sdl.GL_SetSwapInterval(0)
+
+	// 16:9 aspect ratio
+	width, height: i32
+	width = 16 * 80
+	height = 9 * 80
+
+	window := sdl.CreateWindow("Test", width, height, {.OPENGL})
 	if window == nil {
 		fmt.eprintln("Failed to create window:", sdl.GetError())
 		return
@@ -64,10 +73,6 @@ main :: proc() {
 
 	sdl.GL_MakeCurrent(window, ctx)
 
-	// 16:9 aspect ratio
-	width, height: i32
-	width = 16 * 80
-	height = 9 * 80
 
 	// Have to load the proc address to call gl funcdtions
 	gl.load_up_to(3, 3, sdl.gl_set_proc_address)
@@ -206,11 +211,55 @@ main :: proc() {
 
 	// With Color Vertex
 	// With Texture Cords S and T
-	vertices := [4][8]f32 {
-		{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
-		{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
-		{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
-		{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
+	// vertices := [4][8]f32 {
+	// 	{0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0}, // Top Right
+	// 	{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}, // Bottom Right
+	// 	{-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}, // Bottom Left
+	// 	{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
+	// }
+
+	vertices := [180]f32 {
+		-0.5, -0.5, -0.5,  0.0, 0.0,
+		 0.5, -0.5, -0.5,  1.0, 0.0,
+		 0.5,  0.5, -0.5,  1.0, 1.0,
+		 0.5,  0.5, -0.5,  1.0, 1.0,
+		-0.5,  0.5, -0.5,  0.0, 1.0,
+		-0.5, -0.5, -0.5,  0.0, 0.0,
+
+		-0.5, -0.5,  0.5,  0.0, 0.0,
+		 0.5, -0.5,  0.5,  1.0, 0.0,
+		 0.5,  0.5,  0.5,  1.0, 1.0,
+		 0.5,  0.5,  0.5,  1.0, 1.0,
+		-0.5,  0.5,  0.5,  0.0, 1.0,
+		-0.5, -0.5,  0.5,  0.0, 0.0,
+
+		-0.5,  0.5,  0.5,  1.0, 0.0,
+		-0.5,  0.5, -0.5,  1.0, 1.0,
+		-0.5, -0.5, -0.5,  0.0, 1.0,
+		-0.5, -0.5, -0.5,  0.0, 1.0,
+		-0.5, -0.5,  0.5,  0.0, 0.0,
+		-0.5,  0.5,  0.5,  1.0, 0.0,
+
+		 0.5,  0.5,  0.5,  1.0, 0.0,
+		 0.5,  0.5, -0.5,  1.0, 1.0,
+		 0.5, -0.5, -0.5,  0.0, 1.0,
+		 0.5, -0.5, -0.5,  0.0, 1.0,
+		 0.5, -0.5,  0.5,  0.0, 0.0,
+		 0.5,  0.5,  0.5,  1.0, 0.0,
+
+		-0.5, -0.5, -0.5,  0.0, 1.0,
+		 0.5, -0.5, -0.5,  1.0, 1.0,
+		 0.5, -0.5,  0.5,  1.0, 0.0,
+		 0.5, -0.5,  0.5,  1.0, 0.0,
+		-0.5, -0.5,  0.5,  0.0, 0.0,
+		-0.5, -0.5, -0.5,  0.0, 1.0,
+
+		-0.5,  0.5, -0.5,  0.0, 1.0,
+		 0.5,  0.5, -0.5,  1.0, 1.0,
+		 0.5,  0.5,  0.5,  1.0, 0.0,
+		 0.5,  0.5,  0.5,  1.0, 0.0,
+		-0.5,  0.5,  0.5,  0.0, 0.0,
+		-0.5,  0.5, -0.5,  0.0, 1.0
 	}
 
 	/* Two triangle */
@@ -246,12 +295,12 @@ main :: proc() {
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), raw_data(indices[:]), gl.STATIC_DRAW)
 
 	// 3. Set Vertext Attribute Pointer
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(0))
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 3 * size_of(f32))
-	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 5 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, 5 * size_of(f32), 3 * size_of(f32))
+	// gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 5 * size_of(f32), 6 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
 	gl.EnableVertexAttribArray(1)
-	gl.EnableVertexAttribArray(2)
+	// gl.EnableVertexAttribArray(2)
 
 	// Unbinding from ARRAY_BUFFER can do this since VAO is already tracking
 	// the VBO
@@ -279,6 +328,7 @@ main :: proc() {
 
 	// Wireframe mode uncomment below
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	gl.Enable(gl.DEPTH_TEST)
 	frames := 0
 	running := true
 	dragging := false
@@ -312,7 +362,7 @@ main :: proc() {
 		// Sets the color of the screen durning the clear screen
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		// Clears the screen using the Clear Color
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		// 4. Draw step
 		/*  This is just some code to pass a calculated color into frag shader */
@@ -329,16 +379,39 @@ main :: proc() {
 		shader_set_float(&shader, "textureMix", mix)
 
 		// Transformations (don't have glm using built in math/linalg)
-		// Make a tranformation matrix
-		trans := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
+		// Make the model matrix
+		model := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
 		// Apply tranformations to it
+		// model *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(-55.0)), [3]f32{1.0, 0.0, 0.0})
+		model *= linalg.matrix4_rotate_f32(
+			timeValue * linalg.to_radians(f32(50.0)),
+			[3]f32{0.5, 1.0, 0.0},
+		)
 
-		//trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
+		// View Matrix
+		view := linalg.MATRIX4F32_IDENTITY
+		view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, -3.0})
 		// trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
-		trans *= linalg.matrix4_translate_f32([3]f32{0.5, -0.5, 0.0})
-		trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
+
+		// Projection Matrix
+		projection := linalg.MATRIX4F32_IDENTITY
+		projection *= linalg.matrix4_perspective_f32(
+			linalg.to_radians(f32(45.0)),
+			f32(width) / f32(height),
+			0.1,
+			100.0,
+		)
+
+		modelLoc := gl.GetUniformLocation(shader.ID, "model")
+		viewLoc := gl.GetUniformLocation(shader.ID, "view")
+		projectionLoc := gl.GetUniformLocation(shader.ID, "projection")
+
+		gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, raw_data(&model))
+		gl.UniformMatrix4fv(viewLoc, 1, gl.FALSE, raw_data(&view))
+		gl.UniformMatrix4fv(projectionLoc, 1, gl.FALSE, raw_data(&projection))
+
 		transLoc := gl.GetUniformLocation(shader.ID, "transform")
-		gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
+		// gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
 
 
 		gl.ActiveTexture(gl.TEXTURE0)
@@ -355,26 +428,41 @@ main :: proc() {
 
 		// primitive type, starting index of vertex array, how many vertices
 		// Drawing using VBO + VAO
-		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		// Drawing using indices in EBO, Data in VBO and VAO
 		// unsigned int here is u32 I had uint so it wouldn't run
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		// gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 
-		// Doing a new set of tranformations
-		trans = linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
-		// Apply tranformations to it
-		//trans *= linalg.matrix4_rotate_f32(linalg.to_radians(f32(90.0)), [3]f32{0.0, 0.0, 1.0})
-		trans *= linalg.matrix4_translate_f32([3]f32{-0.5, 0.5, 0.0})
+		cubePositions := [10][3]f32 {
+			{0.0, 0.0, 0.0},
+			{2.0, 5.0, -15.0},
+			{-1.5, -2.2, -2.5},
+			{-3.8, -2.0, -12.3},
+			{2.4, -0.4, -3.5},
+			{-1.7, 3.0, -7.5},
+			{1.3, -2.0, -2.5},
+			{1.5, 2.0, -2.5},
+			{1.5, 1.2, -1.5},
+			{-1.3, 1.0, -1.5},
+		}
 
-		trans *= linalg.matrix4_scale_f32(
-			[3]f32{linalg.sin(timeValue), linalg.sin(timeValue), linalg.sin(timeValue)},
-		)
-		// trans *= linalg.matrix4_rotate_f32(timeValue, [3]f32{0.0, 0.0, 1.0})
-		gl.UniformMatrix4fv(transLoc, 1, gl.FALSE, raw_data(&trans))
+		for i in 0 ..< 10 {
+			model := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
+			model *= linalg.matrix4_translate_f32(cubePositions[i]) // current postiion
 
+			angle := f32(20.0) * f32(i)
 
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+			model *= linalg.matrix4_rotate_f32(
+				timeValue * linalg.to_radians(angle),
+				[3]f32{1.0, 0.3, 0.5},
+			)
+
+			modelLoc := gl.GetUniformLocation(shader.ID, "model")
+			gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, raw_data(&model))
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
+		}
 
 		gl.BindVertexArray(0) // could unbind it every time
 
