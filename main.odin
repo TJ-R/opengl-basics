@@ -93,11 +93,11 @@ main :: proc() {
 
 	// Set parameters
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-
-	tex_width, tex_height, nrChannels: i32
+	gl.TexParameteri(
+		gl.TEXTURE_2D,
+		gl.TEXTURE_WRAP_T,
+		gl.CLAMP_TO_EDGE,
+	); gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); tex_width, tex_height, nrChannels: i32
 	// Get texture width, height, and number of color channels
 
 	texture_data: [^]byte = stbi.load(
@@ -391,6 +391,7 @@ main :: proc() {
 		// View Matrix
 		view := linalg.MATRIX4F32_IDENTITY
 		view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, -3.0})
+		view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, 0.0})
 		// trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
 
 		// Projection Matrix
@@ -451,13 +452,16 @@ main :: proc() {
 			model := linalg.MATRIX4F32_IDENTITY // The 4x4 identity matrix
 			model *= linalg.matrix4_translate_f32(cubePositions[i]) // current postiion
 
-			angle := f32(20.0) * f32(i)
+			angle := f32(20.0) * f32(i + 1)
 
-			model *= linalg.matrix4_rotate_f32(
-				timeValue * linalg.to_radians(angle),
-				[3]f32{1.0, 0.3, 0.5},
-			)
+			model *= linalg.matrix4_rotate_f32(linalg.to_radians(angle), [3]f32{1.0, 0.3, 0.5})
 
+			if (i % 2 == 0) {
+				model *= linalg.matrix4_rotate_f32(
+					timeValue * linalg.to_radians(angle),
+					[3]f32{1.0, 0.3, 0.5},
+				)
+			}
 			modelLoc := gl.GetUniformLocation(shader.ID, "model")
 			gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, raw_data(&model))
 			gl.DrawArrays(gl.TRIANGLES, 0, 36)
