@@ -333,6 +333,9 @@ main :: proc() {
 	running := true
 	dragging := false
 
+	camera: Camera
+	init_camera(&camera)
+
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
@@ -355,6 +358,14 @@ main :: proc() {
 						mix += .1
 					case sdl.K_DOWN:
 						mix -= .1
+					case sdl.K_W:
+						move_camera_forward(&camera)
+					case sdl.K_S:
+						move_camera_backward(&camera)
+					case sdl.K_A:
+						move_camera_left(&camera)
+					case sdl.K_D:
+						move_camera_right(&camera)
 					}
 				}
 			}
@@ -389,15 +400,26 @@ main :: proc() {
 		)
 
 		// View Matrix
-		view := linalg.MATRIX4F32_IDENTITY
-		view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, -3.0})
-		view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, 0.0})
-		// trans *= linalg.matrix4_scale_f32([3]f32{0.5, 0.5, 0.5})
+		// view := linalg.MATRIX4F32_IDENTITY
+		// view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, -3.0})
+		// view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, 0.0})
+
+		// radius := f32(10.0) // distance from target
+		// camX := math.sin(f32(sdl.GetTicks()) / 1000.0) * radius
+		// camZ := math.cos(f32(sdl.GetTicks()) / 1000.0) * radius
+		// view := linalg.matrix4_look_at_f32(
+		// 	{camX, 0.0, camZ},
+		// 	{f32(0.0), 0.0, 0.0},
+		// 	{f32(0.0), 1.0, 0.0},
+		// )
+
+		view := camera.lookat
+
 
 		// Projection Matrix
 		projection := linalg.MATRIX4F32_IDENTITY
 		projection *= linalg.matrix4_perspective_f32(
-			linalg.to_radians(f32(45.0)),
+			linalg.to_radians(f32(40.0)),
 			f32(width) / f32(height),
 			0.1,
 			100.0,
