@@ -14,7 +14,7 @@ Camera :: struct {
 
 // Should overload this?
 init_camera :: proc(camera: ^Camera) {
-	camera.speed = 2.5
+	camera.speed = 3.0
 	camera.target = {f32(0.0), f32(0.0), f32(0.0)} // Can use target if trying to track something
 	camera.position = {f32(0.0), f32(0.0), f32(3.0)}
 	camera.front = {f32(0.0), 0.0, -1.0}

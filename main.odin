@@ -1,5 +1,6 @@
 package main
 
+import c "core:c"
 import "core:fmt"
 import "core:math"
 import "core:math/linalg"
@@ -345,6 +346,7 @@ main :: proc() {
 	for running {
 		current_frame := f32(sdl.GetTicks()) / 1000.0
 		delta_time = current_frame - last_frame
+		fmt.println(delta_time)
 		last_frame = current_frame
 
 		start := sdl.GetTicks()
@@ -365,18 +367,30 @@ main :: proc() {
 						mix += .1
 					case sdl.K_DOWN:
 						mix -= .1
-					case sdl.K_W:
-						move_camera_forward(&camera, delta_time)
-					case sdl.K_S:
-						move_camera_backward(&camera, delta_time)
-					case sdl.K_A:
-						move_camera_left(&camera, delta_time)
-					case sdl.K_D:
-						move_camera_right(&camera, delta_time)
 					}
+
+					// IMPORTANT LESSON
+					// The below is commented out since it is not the best way to handle
+					// keys in held state. It becomes os limited on when the repeat
+					// signal is fired.
+
+					// case sdl.K_W:
+					// 	fmt.println("Moving forward")
+					// 	move_camera_forward(&camera, delta_time)
+					// case sdl.K_S:
+					// 	move_camera_backward(&camera, delta_time)
+					// case sdl.K_A:
+					// 	move_camera_left(&camera, delta_time)
+					// case sdl.K_D:
+					// 	move_camera_right(&camera, delta_time)
 				}
 			}
 		}
+
+		keyArr: c.int
+		keyState := sdl.GetKeyboardState(&keyArr)
+		process_continuous_input(&camera, delta_time, keyState)
+
 		// Sets the color of the screen durning the clear screen
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		// Clears the screen using the Clear Color
@@ -515,6 +529,25 @@ main :: proc() {
 
 	sdl.Quit()
 	return
+}
+
+process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]bool) {
+	if (keystate[sdl.Scancode.W]) {
+		move_camera_forward(camera, delta_time)
+	}
+
+	if (keystate[sdl.Scancode.S]) {
+		move_camera_backward(camera, delta_time)
+	}
+
+	if (keystate[sdl.Scancode.A]) {
+		move_camera_left(camera, delta_time)
+	}
+
+	if (keystate[sdl.Scancode.D]) {
+		move_camera_right(camera, delta_time)
+	}
+
 }
 
 // track_mouse :: proc() {
