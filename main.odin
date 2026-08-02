@@ -340,9 +340,16 @@ main :: proc() {
 	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
 	mix: f32 = 0.2
+	delta_time: f32 = 0.0
+	last_frame: f32 = 0.0
 	for running {
+		current_frame := f32(sdl.GetTicks()) / 1000.0
+		delta_time = current_frame - last_frame
+		last_frame = current_frame
+
 		start := sdl.GetTicks()
 		frames += 1
+
 		event: sdl.Event
 		for sdl.PollEvent(&event) {
 			#partial switch event.type {
@@ -359,13 +366,13 @@ main :: proc() {
 					case sdl.K_DOWN:
 						mix -= .1
 					case sdl.K_W:
-						move_camera_forward(&camera)
+						move_camera_forward(&camera, delta_time)
 					case sdl.K_S:
-						move_camera_backward(&camera)
+						move_camera_backward(&camera, delta_time)
 					case sdl.K_A:
-						move_camera_left(&camera)
+						move_camera_left(&camera, delta_time)
 					case sdl.K_D:
-						move_camera_right(&camera)
+						move_camera_right(&camera, delta_time)
 					}
 				}
 			}

@@ -14,7 +14,7 @@ Camera :: struct {
 
 // Should overload this?
 init_camera :: proc(camera: ^Camera) {
-	camera.speed = 0.05
+	camera.speed = 2.5
 	camera.target = {f32(0.0), f32(0.0), f32(0.0)} // Can use target if trying to track something
 	camera.position = {f32(0.0), f32(0.0), f32(3.0)}
 	camera.front = {f32(0.0), 0.0, -1.0}
@@ -40,23 +40,23 @@ init_camera :: proc(camera: ^Camera) {
 	)
 }
 
-move_camera_forward :: proc(camera: ^Camera) {
-	camera.position -= (camera.direction + {f32(0.0), 0.0, camera.speed})
+move_camera_forward :: proc(camera: ^Camera, delta_time: f32) {
+	camera.position += camera.front * (camera.speed * delta_time)
 	update_camera_lookat(camera)
 }
 
-move_camera_backward :: proc(camera: ^Camera) {
-	camera.position += (camera.direction + {f32(0.0), 0.0, camera.speed})
+move_camera_backward :: proc(camera: ^Camera, delta_time: f32) {
+	camera.position -= camera.front * (camera.speed * delta_time)
 	update_camera_lookat(camera)
 }
 
-move_camera_right :: proc(camera: ^Camera) {
-	camera.position += (camera.right + {camera.speed, f32(0.0), f32(0.0)})
+move_camera_right :: proc(camera: ^Camera, delta_time: f32) {
+	camera.position += camera.right * (camera.speed * delta_time)
 	update_camera_lookat(camera)
 }
 
-move_camera_left :: proc(camera: ^Camera) {
-	camera.position -= (camera.right + {camera.speed, f32(0.0), f32(0.0)})
+move_camera_left :: proc(camera: ^Camera, delta_time: f32) {
+	camera.position -= camera.right * (camera.speed * delta_time)
 	update_camera_lookat(camera)
 }
 
