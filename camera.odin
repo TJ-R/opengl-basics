@@ -2,16 +2,17 @@ package main
 import "core:math/linalg"
 
 Camera :: struct {
-	speed:     f32,
-	target:    linalg.Vector3f32,
-	front:     linalg.Vector3f32,
-	position:  linalg.Vector3f32,
-	direction: linalg.Vector3f32,
-	up:        linalg.Vector3f32,
-	right:     linalg.Vector3f32,
-	lookat:    linalg.Matrix4f32,
-	pitch:     f32,
-	yaw:       f32,
+	speed:       f32,
+	target:      linalg.Vector3f32,
+	front:       linalg.Vector3f32,
+	position:    linalg.Vector3f32,
+	direction:   linalg.Vector3f32,
+	up:          linalg.Vector3f32,
+	right:       linalg.Vector3f32,
+	lookat:      linalg.Matrix4f32,
+	pitch:       f32,
+	yaw:         f32,
+	sensitivity: f32,
 }
 
 // Should overload this?
@@ -24,6 +25,7 @@ init_camera :: proc(camera: ^Camera) {
 	// Default to -90 degrees since we have elements pos in -z direction
 	camera.yaw = -90.0
 	camera.pitch = 0.0
+	camera.sensitivity = 0.1
 
 	/* 
         Just a note on normalization. Keeping the same direction of the vecto       Just a note on normalization. Keeping the same direction of the vector but making its length 1. We accomplish this by dividing
@@ -69,6 +71,12 @@ move_camera_left :: proc(camera: ^Camera, delta_time: f32) {
 }
 
 update_camera_pitch_yaw :: proc(camera: ^Camera) {
+
+	if (camera.pitch > 89.0) {
+		camera.pitch = 89.0
+	} else if (camera.pitch < -89.0) {
+		camera.pitch = -89.0
+	}
 	// looking down the y-axis of the camera to set the
 	// vectors x and z component in accordance to soh cah toa
 	// the yaw angle is at origin the opposite side is length on z-axis
@@ -78,7 +86,6 @@ update_camera_pitch_yaw :: proc(camera: ^Camera) {
 	camera.direction.x = linalg.cos(linalg.to_radians(yaw))
 	camera.direction.z = linalg.sin(linalg.to_radians(yaw))
 	*/
-
 
 	// Now updating the pitch is looking at the y axis while sitting on the
 	// x/z axis so that it is a line (2D plane just like above)
@@ -92,6 +99,9 @@ update_camera_pitch_yaw :: proc(camera: ^Camera) {
 		linalg.cos(linalg.to_radians(camera.yaw)) * linalg.cos(linalg.to_radians(camera.pitch))
 	camera.direction.z =
 		linalg.sin(linalg.to_radians(camera.yaw)) * linalg.cos(linalg.to_radians(camera.pitch))
+
+	camera.front = linalg.normalize(camera.direction)
+	update_camera_lookat(camera)
 }
 
 update_camera_lookat :: proc(camera: ^Camera) {

@@ -60,6 +60,12 @@ main :: proc() {
 	}
 	defer sdl.DestroyWindow(window)
 
+
+	if (!sdl.SetWindowRelativeMouseMode(window, true)) {
+		fmt.eprintln("Failed to set relative mouse mode:", sdl.GetError())
+		return
+	}
+
 	fmt.println("[Debug] Window Initialized")
 
 	// Creating the ctx for OpenGL based on SDL's window
@@ -337,6 +343,9 @@ main :: proc() {
 	camera: Camera
 	init_camera(&camera)
 
+	prev_mouse_x, prev_mouse_y: f32
+	mouse_initialized := false
+
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
@@ -346,11 +355,20 @@ main :: proc() {
 	for running {
 		current_frame := f32(sdl.GetTicks()) / 1000.0
 		delta_time = current_frame - last_frame
-		fmt.println(delta_time)
 		last_frame = current_frame
 
 		start := sdl.GetTicks()
 		frames += 1
+
+		prev_mouse_x, prev_mouse_y = handle_mouse_update(
+			&camera,
+			prev_mouse_x,
+			prev_mouse_y,
+			mouse_initialized,
+		)
+		if (!mouse_initialized) {
+			mouse_initialized = !mouse_initialized
+		}
 
 		event: sdl.Event
 		for sdl.PollEvent(&event) {
@@ -368,21 +386,6 @@ main :: proc() {
 					case sdl.K_DOWN:
 						mix -= .1
 					}
-
-					// IMPORTANT LESSON
-					// The below is commented out since it is not the best way to handle
-					// keys in held state. It becomes os limited on when the repeat
-					// signal is fired.
-
-					// case sdl.K_W:
-					// 	fmt.println("Moving forward")
-					// 	move_camera_forward(&camera, delta_time)
-					// case sdl.K_S:
-					// 	move_camera_backward(&camera, delta_time)
-					// case sdl.K_A:
-					// 	move_camera_left(&camera, delta_time)
-					// case sdl.K_D:
-					// 	move_camera_right(&camera, delta_time)
 				}
 			}
 		}
@@ -420,22 +423,8 @@ main :: proc() {
 			[3]f32{0.5, 1.0, 0.0},
 		)
 
-		// View Matrix
-		// view := linalg.MATRIX4F32_IDENTITY
-		// view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, -3.0})
-		// view *= linalg.matrix4_translate_f32([3]f32{0.0, 0.0, 0.0})
-
-		// radius := f32(10.0) // distance from target
-		// camX := math.sin(f32(sdl.GetTicks()) / 1000.0) * radius
-		// camZ := math.cos(f32(sdl.GetTicks()) / 1000.0) * radius
-		// view := linalg.matrix4_look_at_f32(
-		// 	{camX, 0.0, camZ},
-		// 	{f32(0.0), 0.0, 0.0},
-		// 	{f32(0.0), 1.0, 0.0},
-		// )
 
 		view := camera.lookat
-
 
 		// Projection Matrix
 		projection := linalg.MATRIX4F32_IDENTITY
@@ -547,6 +536,44 @@ process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]
 	if (keystate[sdl.Scancode.D]) {
 		move_camera_right(camera, delta_time)
 	}
+}
+
+handle_mouse_update :: proc(
+	camera: ^Camera,
+	prev_mouse_x, prev_mouse_y: f32,
+	is_init: bool,
+) -> (
+	f32,
+	f32,
+) {
+	mouseX, mouseY, offsetX, offsetY: f32
+	mouseState := sdl.GetGlobalMouseState(&mouseX, &mouseY)
+
+	if (!is_init) {
+		return mouseX, mouseY
+	}
+
+	offsetX = mouseX - prev_mouse_x
+	offsetY = prev_mouse_y - mouseY
+
+	fmt.println("==========================")
+	fmt.printf("Prev X: %3.2f Prev Y: %3.2f\n", mouseX, mouseY)
+	fmt.printf("X: %3.2f Y: %3.2f\n", mouseX, mouseY)
+	fmt.printf("Offset X: %3.2f Offset Y: %3.2f\n", offsetX, offsetY)
+	fmt.println("==========================\n")
+
+	camera.yaw += (offsetX * camera.sensitivity)
+	camera.pitch += (offsetY * camera.sensitivity)
+	update_camera_pitch_yaw(camera)
+
+	fmt.println("==========================")
+	fmt.printf("Prev X: %3.2f Prev Y: %3.2f\n", mouseX, mouseY)
+	fmt.printf("X: %3.2f Y: %3.2f\n", mouseX, mouseY)
+	fmt.printf("Offset X: %3.2f Offset Y: %3.2f\n", offsetX, offsetY)
+	fmt.printf("Yaw: %3.2f Pitch: %3.2f\n", camera.yaw, camera.pitch)
+	fmt.println("==========================\n")
+
+	return mouseX, mouseY
 }
 
 // track_mouse :: proc() {
