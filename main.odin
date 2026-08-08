@@ -547,7 +547,6 @@ process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]
 	if (keystate[sdl.Scancode.D]) {
 		move_camera_right(camera, delta_time)
 	}
-
 }
 
 // track_mouse :: proc() {
