@@ -53,22 +53,23 @@ init_camera :: proc(camera: ^Camera) {
 }
 
 move_camera_forward :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position += camera.front * (camera.speed * delta_time)
+
+	camera.position.xz += (camera.front * (camera.speed * delta_time)).xz
 	update_camera_lookat(camera)
 }
 
 move_camera_backward :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position -= camera.front * (camera.speed * delta_time)
+	camera.position.xz -= (camera.front * (camera.speed * delta_time)).xz
 	update_camera_lookat(camera)
 }
 
 move_camera_right :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position += camera.right * (camera.speed * delta_time)
+	camera.position.xz -= (camera.right * (camera.speed * delta_time)).xz
 	update_camera_lookat(camera)
 }
 
 move_camera_left :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position -= camera.right * (camera.speed * delta_time)
+	camera.position.xz += (camera.right * (camera.speed * delta_time)).xz
 	update_camera_lookat(camera)
 }
 
@@ -102,7 +103,15 @@ update_camera_pitch_yaw :: proc(camera: ^Camera) {
 	camera.direction.z =
 		linalg.sin(linalg.to_radians(camera.yaw)) * linalg.cos(linalg.to_radians(camera.pitch))
 
+	camera.direction = linalg.normalize(camera.direction)
+
 	camera.front = linalg.normalize(camera.direction)
+	camera.right = linalg.cross(
+		linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}),
+		camera.direction,
+	)
+	camera.up = linalg.cross(camera.direction, camera.right)
+
 	update_camera_lookat(camera)
 }
 
