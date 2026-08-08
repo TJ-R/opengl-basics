@@ -13,6 +13,7 @@ Camera :: struct {
 	pitch:       f32,
 	yaw:         f32,
 	sensitivity: f32,
+	fov:         f32,
 }
 
 // Should overload this?
@@ -25,7 +26,8 @@ init_camera :: proc(camera: ^Camera) {
 	// Default to -90 degrees since we have elements pos in -z direction
 	camera.yaw = -90.0
 	camera.pitch = 0.0
-	camera.sensitivity = 0.25
+	camera.sensitivity = 0.1
+	camera.fov = 45.0
 
 	/* 
         Just a note on normalization. Keeping the same direction of the vecto       Just a note on normalization. Keeping the same direction of the vector but making its length 1. We accomplish this by dividing

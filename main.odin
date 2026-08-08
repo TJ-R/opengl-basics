@@ -377,6 +377,15 @@ main :: proc() {
 						mix -= .1
 					}
 				}
+			case .MOUSE_WHEEL:
+				{
+					camera.fov -= event.wheel.y
+					if (camera.fov < 1.0) {
+						camera.fov = 1.0
+					} else if (camera.fov > 45.0) {
+						camera.fov = 45.0
+					}
+				}
 			}
 		}
 
@@ -419,7 +428,7 @@ main :: proc() {
 		// Projection Matrix
 		projection := linalg.MATRIX4F32_IDENTITY
 		projection *= linalg.matrix4_perspective_f32(
-			linalg.to_radians(f32(40.0)),
+			linalg.to_radians(f32(camera.fov)),
 			f32(width) / f32(height),
 			0.1,
 			100.0,
