@@ -520,6 +520,7 @@ main :: proc() {
 }
 
 process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]bool) {
+	fmt.println("Checking keyboard update")
 	if (keystate[sdl.Scancode.W]) {
 		move_camera_forward(camera, delta_time)
 	}
@@ -538,17 +539,13 @@ process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]
 }
 
 handle_mouse_update :: proc(camera: ^Camera) {
+	fmt.println("Checking mouse update")
 	offsetX, offsetY: f32
 	mouseState := sdl.GetRelativeMouseState(&offsetX, &offsetY)
 
 	camera.yaw += (offsetX * camera.sensitivity)
 	camera.pitch += (-offsetY * camera.sensitivity)
 	update_camera_pitch_yaw(camera)
-
-	fmt.println("==========================")
-	fmt.printf("Offset X: %3.2f Offset Y: %3.2f\n", offsetX, offsetY)
-	fmt.printf("Yaw: %3.2f Pitch: %3.2f\n", camera.yaw, camera.pitch)
-	fmt.println("==========================\n")
 }
 
 // track_mouse :: proc() {
