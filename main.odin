@@ -343,8 +343,8 @@ main :: proc() {
 	camera: Camera
 	init_camera(&camera)
 
-	prev_mouse_x, prev_mouse_y: f32
-	mouse_initialized := false
+	prev_mouse_x: f32 = f32(width) / 2.0
+	prev_mouse_y: f32 = f32(height) / 2.0
 
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
@@ -360,15 +360,7 @@ main :: proc() {
 		start := sdl.GetTicks()
 		frames += 1
 
-		prev_mouse_x, prev_mouse_y = handle_mouse_update(
-			&camera,
-			prev_mouse_x,
-			prev_mouse_y,
-			mouse_initialized,
-		)
-		if (!mouse_initialized) {
-			mouse_initialized = !mouse_initialized
-		}
+		prev_mouse_x, prev_mouse_y = handle_mouse_update(&camera, prev_mouse_x, prev_mouse_y)
 
 		event: sdl.Event
 		for sdl.PollEvent(&event) {
@@ -538,20 +530,9 @@ process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]
 	}
 }
 
-handle_mouse_update :: proc(
-	camera: ^Camera,
-	prev_mouse_x, prev_mouse_y: f32,
-	is_init: bool,
-) -> (
-	f32,
-	f32,
-) {
+handle_mouse_update :: proc(camera: ^Camera, prev_mouse_x, prev_mouse_y: f32) -> (f32, f32) {
 	mouseX, mouseY, offsetX, offsetY: f32
 	mouseState := sdl.GetGlobalMouseState(&mouseX, &mouseY)
-
-	if (!is_init) {
-		return mouseX, mouseY
-	}
 
 	offsetX = mouseX - prev_mouse_x
 	offsetY = prev_mouse_y - mouseY
