@@ -25,7 +25,7 @@ init_camera :: proc(camera: ^Camera) {
 	// Default to -90 degrees since we have elements pos in -z direction
 	camera.yaw = -90.0
 	camera.pitch = 0.0
-	camera.sensitivity = 0.1
+	camera.sensitivity = 0.25
 
 	/* 
         Just a note on normalization. Keeping the same direction of the vecto       Just a note on normalization. Keeping the same direction of the vector but making its length 1. We accomplish this by dividing

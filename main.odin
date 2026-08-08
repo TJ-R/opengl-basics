@@ -66,6 +66,7 @@ main :: proc() {
 		return
 	}
 
+
 	fmt.println("[Debug] Window Initialized")
 
 	// Creating the ctx for OpenGL based on SDL's window
@@ -343,9 +344,6 @@ main :: proc() {
 	camera: Camera
 	init_camera(&camera)
 
-	prev_mouse_x: f32 = f32(width) / 2.0
-	prev_mouse_y: f32 = f32(height) / 2.0
-
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
@@ -360,7 +358,7 @@ main :: proc() {
 		start := sdl.GetTicks()
 		frames += 1
 
-		prev_mouse_x, prev_mouse_y = handle_mouse_update(&camera, prev_mouse_x, prev_mouse_y)
+		handle_mouse_update(&camera)
 
 		event: sdl.Event
 		for sdl.PollEvent(&event) {
@@ -530,31 +528,18 @@ process_continuous_input :: proc(camera: ^Camera, delta_time: f32, keystate: [^]
 	}
 }
 
-handle_mouse_update :: proc(camera: ^Camera, prev_mouse_x, prev_mouse_y: f32) -> (f32, f32) {
-	mouseX, mouseY, offsetX, offsetY: f32
-	mouseState := sdl.GetGlobalMouseState(&mouseX, &mouseY)
-
-	offsetX = mouseX - prev_mouse_x
-	offsetY = prev_mouse_y - mouseY
-
-	fmt.println("==========================")
-	fmt.printf("Prev X: %3.2f Prev Y: %3.2f\n", mouseX, mouseY)
-	fmt.printf("X: %3.2f Y: %3.2f\n", mouseX, mouseY)
-	fmt.printf("Offset X: %3.2f Offset Y: %3.2f\n", offsetX, offsetY)
-	fmt.println("==========================\n")
+handle_mouse_update :: proc(camera: ^Camera) {
+	offsetX, offsetY: f32
+	mouseState := sdl.GetRelativeMouseState(&offsetX, &offsetY)
 
 	camera.yaw += (offsetX * camera.sensitivity)
-	camera.pitch += (offsetY * camera.sensitivity)
+	camera.pitch += (-offsetY * camera.sensitivity)
 	update_camera_pitch_yaw(camera)
 
 	fmt.println("==========================")
-	fmt.printf("Prev X: %3.2f Prev Y: %3.2f\n", mouseX, mouseY)
-	fmt.printf("X: %3.2f Y: %3.2f\n", mouseX, mouseY)
 	fmt.printf("Offset X: %3.2f Offset Y: %3.2f\n", offsetX, offsetY)
 	fmt.printf("Yaw: %3.2f Pitch: %3.2f\n", camera.yaw, camera.pitch)
 	fmt.println("==========================\n")
-
-	return mouseX, mouseY
 }
 
 // track_mouse :: proc() {
