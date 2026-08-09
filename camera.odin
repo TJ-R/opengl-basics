@@ -121,43 +121,60 @@ update_camera_lookat :: proc(camera: ^Camera) {
 	fmt.printf("Front: %2.2f\n", camera.front)
 	fmt.printf("Target: %2.2f\n", camera.position + camera.front)
 
-	// camera.lookat = linalg.matrix4_look_at_f32(
-	// 	camera.position,
-	// 	camera.position + camera.front,
-	// 	{f32(0.0), 1.0, 0.0},
-	// )
+	camera.lookat = linalg.matrix4_look_at_f32(
+		camera.position,
+		camera.position + camera.front,
+		{f32(0.0), 1.0, 0.0},
+	)
+
+	fmt.println("================")
+	fmt.println("=== BUILT IN ===")
+	fmt.println("================")
+	for i in 0 ..< 4 {
+		for j in 0 ..< 4 {
+			fmt.printf("%2.2f ", camera.lookat[i][j])
+		}
+		fmt.println()
+	}
+	fmt.println()
 
 	camera.lookat = custom_lookat_matrix4f32(
 		camera.position,
 		camera.position + camera.front,
 		{f32(0.0), 1.0, 0.0},
 	)
+
+	fmt.println("==============")
+	fmt.println("=== CUSTOM ===")
+	fmt.println("==============")
+	for i in 0 ..< 4 {
+		for j in 0 ..< 4 {
+			fmt.printf("%2.2f ", camera.lookat[i][j])
+		}
+		fmt.println()
+	}
+	fmt.println()
+
 }
 
 custom_lookat_matrix4f32 :: proc(position, target, up: linalg.Vector3f32) -> linalg.Matrix4f32 {
 	lookAt: linalg.Matrix4f32
 
+	fmt.printf("Custom Target: %2.2f\n", target)
+
 	direction := linalg.normalize(position - target)
 	right := linalg.cross(linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}), direction).xyz
+	cam_up := linalg.cross(direction, right)
+
+	fmt.printf("Custom Direction: %2.2f\n", direction)
+	fmt.printf("Custom Right: %2.2f\n", right)
 
 	// I manually transposed this
-	lookAt = {
-		right.x,
-		right.y,
-		right.z,
-		0,
-		up.x,
-		up.y,
-		up.z,
-		0,
-		direction.x,
-		direction.y,
-		direction.z,
-		0,
-		0,
-		0,
-		0,
-		1,
+	lookAt = matrix[4, 4]f32{
+		right.x, right.y, right.z, 0,
+		cam_up.x, cam_up.y, cam_up.z, 0,
+		direction.x, direction.y, direction.z, 0,
+		0, 0, 0, 1,
 	}
 
 
@@ -167,12 +184,7 @@ custom_lookat_matrix4f32 :: proc(position, target, up: linalg.Vector3f32) -> lin
 	positionTransform[1][3] -= position.y
 	positionTransform[2][3] -= position.z
 
-	lookAt = positionTransform
+	lookAt *= linalg.transpose(positionTransform)
 
-	// Currenly the camera position
-	// to move the objects with to the view
-	// I need to inverse the position and rotation
-	// which is transponsing the matrix
-
-	return linalg.transpose(lookAt)
+	return lookAt
 }
