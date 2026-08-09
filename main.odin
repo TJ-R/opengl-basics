@@ -266,7 +266,7 @@ main :: proc() {
 		use_shader(&light_src_shader)
 		model := linalg.MATRIX4F32_IDENTITY
 		model *= linalg.matrix4_translate_f32(light_src_pos)
-		model *= linalg.matrix4_scale_f32({0.5, 0.5, 0.5})
+		model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
 
 		view := camera.lookat
 		projection := linalg.MATRIX4F32_IDENTITY
@@ -278,23 +278,19 @@ main :: proc() {
 		)
 
 		// Set uniforms
-		modelLoc := gl.GetUniformLocation(light_src_shader.ID, "model")
-		viewLoc := gl.GetUniformLocation(light_src_shader.ID, "view")
-		projectionLoc := gl.GetUniformLocation(light_src_shader.ID, "projection")
-		gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, raw_data(&model))
-		gl.UniformMatrix4fv(viewLoc, 1, gl.FALSE, raw_data(&view))
-		gl.UniformMatrix4fv(projectionLoc, 1, gl.FALSE, raw_data(&projection))
+		shader_set_mat4f32(&light_src_shader, "model", model)
+		shader_set_mat4f32(&light_src_shader, "view", view)
+		shader_set_mat4f32(&light_src_shader, "projection", projection)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 
 		use_shader(&object_shader)
+
 		model = linalg.MATRIX4F32_IDENTITY
-		modelLoc = gl.GetUniformLocation(object_shader.ID, "model")
-		viewLoc = gl.GetUniformLocation(object_shader.ID, "view")
-		projectionLoc = gl.GetUniformLocation(object_shader.ID, "projection")
-		gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, raw_data(&model))
-		gl.UniformMatrix4fv(viewLoc, 1, gl.FALSE, raw_data(&view))
-		gl.UniformMatrix4fv(projectionLoc, 1, gl.FALSE, raw_data(&projection))
+		shader_set_mat4f32(&light_src_shader, "model", model)
+		shader_set_mat4f32(&light_src_shader, "view", view)
+		shader_set_mat4f32(&light_src_shader, "projection", projection)
+
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 

@@ -1,5 +1,6 @@
 package main
 import "core:fmt"
+import "core:math/linalg"
 import "core:os"
 import "core:strings"
 import gl "vendor:OpenGL"
@@ -82,6 +83,12 @@ shader_set_vec4f :: proc(shader: ^Shader, name: string, a, b, c, d: f32) {
 shader_set_vec3f :: proc(shader: ^Shader, name: string, a, b, c: f32) {
 	uniformLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring(name))
 	gl.Uniform3f(uniformLoc, a, b, c)
+}
+
+shader_set_mat4f32 :: proc(shader: ^Shader, name: string, mat: linalg.Matrix4f32) {
+	uniformLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring(name))
+	new_matrix := mat
+	gl.UniformMatrix4fv(uniformLoc, 1, gl.FALSE, raw_data(&new_matrix))
 }
 
 compile_shader :: proc(src: []byte, shaderType: u32) -> (u32, i32, string) {
