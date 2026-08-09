@@ -117,76 +117,58 @@ update_camera_pitch_yaw :: proc(camera: ^Camera) {
 }
 
 update_camera_lookat :: proc(camera: ^Camera) {
-	fmt.printf("Position: %2.2f\n", camera.position)
-	fmt.printf("Front: %2.2f\n", camera.front)
-	fmt.printf("Target: %2.2f\n", camera.position + camera.front)
-
 	camera.lookat = linalg.matrix4_look_at_f32(
 		camera.position,
 		camera.position + camera.front,
 		{f32(0.0), 1.0, 0.0},
 	)
 
-	fmt.println("================")
-	fmt.println("=== BUILT IN ===")
-	fmt.println("================")
-	for i in 0 ..< 4 {
-		for j in 0 ..< 4 {
-			fmt.printf("%2.2f ", camera.lookat[i][j])
-		}
-		fmt.println()
-	}
-	fmt.println()
-
 	camera.lookat = custom_lookat_matrix4f32(
 		camera.position,
 		camera.position + camera.front,
 		{f32(0.0), 1.0, 0.0},
 	)
-
-	fmt.println("==============")
-	fmt.println("=== CUSTOM ===")
-	fmt.println("==============")
-	for i in 0 ..< 4 {
-		for j in 0 ..< 4 {
-			fmt.printf("%2.2f ", camera.lookat[i][j])
-		}
-		fmt.println()
-	}
-	fmt.println()
-
 }
 
 custom_lookat_matrix4f32 :: proc(position, target, up: linalg.Vector3f32) -> linalg.Matrix4f32 {
-	lookAt: linalg.Matrix4f32
-
-	fmt.printf("Custom Target: %2.2f\n", target)
-
 	direction := linalg.normalize(position - target)
 	right := linalg.normalize(
 		linalg.cross(linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}), direction),
 	)
-	cam_up := linalg.cross(direction, right)
+	cam_up := linalg.normalize(linalg.cross(direction, right))
 
-	fmt.printf("Custom Direction: %2.2f\n", direction)
-	fmt.printf("Custom Right: %2.2f\n", right)
-
-	// I manually transposed this
-	lookAt = matrix[4, 4]f32{
-		right.x, right.y, right.z, 0,
-		cam_up.x, cam_up.y, cam_up.z, 0,
-		direction.x, direction.y, direction.z, 0,
-		0, 0, 0, 1,
-	}
+	// The transpose of the rotation matrix
+	// lookAt = matrix[4, 4]f32{
+	// 	right.x, right.y, right.z, 0,
+	// 	cam_up.x, cam_up.y, cam_up.z, 0,
+	// 	direction.x, direction.y, direction.z, 0,
+	// 	0, 0, 0, 1,
+	// }
 
 
-	// Negated
-	positionTransform := linalg.MATRIX4F32_IDENTITY
-	positionTransform[0][3] -= position.x
-	positionTransform[1][3] -= position.y
-	positionTransform[2][3] -= position.z
+	// Interesting how [col][row] instead of [row][col]
+	// Both odin and glm use column-major indexing for matricies
+	// If manually writing [4][4] would need to tranpose the result
+	lookAt := linalg.MATRIX4F32_IDENTITY
+	lookAt[0][0] = right.x // First column, first row
+	lookAt[1][0] = right.y
+	lookAt[2][0] = right.z
+	lookAt[0][1] = cam_up.x // First column, second row
+	lookAt[1][1] = cam_up.y
+	lookAt[2][1] = cam_up.z
+	lookAt[0][2] = direction.x // First column, third row
+	lookAt[1][2] = direction.y
+	lookAt[2][2] = direction.z
 
-	lookAt *= linalg.transpose(positionTransform)
+	// Transposed and negated ("Inversed")
+	// This is so the translation is view in terms of the object
+	// being translated and not the camera
+	translation := linalg.MATRIX4F32_IDENTITY
+	translation[3][0] -= position.x
+	translation[3][1] -= position.y
+	translation[3][2] -= position.z
+
+	lookAt *= translation
 
 	return lookAt
 }
