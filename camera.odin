@@ -163,7 +163,9 @@ custom_lookat_matrix4f32 :: proc(position, target, up: linalg.Vector3f32) -> lin
 	fmt.printf("Custom Target: %2.2f\n", target)
 
 	direction := linalg.normalize(position - target)
-	right := linalg.cross(linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}), direction).xyz
+	right := linalg.normalize(
+		linalg.cross(linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}), direction),
+	)
 	cam_up := linalg.cross(direction, right)
 
 	fmt.printf("Custom Direction: %2.2f\n", direction)
