@@ -55,22 +55,22 @@ init_camera :: proc(camera: ^Camera) {
 
 move_camera_forward :: proc(camera: ^Camera, delta_time: f32) {
 
-	camera.position.xz += (camera.front * (camera.speed * delta_time)).xz
+	camera.position += (camera.front * (camera.speed * delta_time))
 	update_camera_lookat(camera)
 }
 
 move_camera_backward :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position.xz -= (camera.front * (camera.speed * delta_time)).xz
+	camera.position -= (camera.front * (camera.speed * delta_time))
 	update_camera_lookat(camera)
 }
 
 move_camera_right :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position.xz -= (camera.right * (camera.speed * delta_time)).xz
+	camera.position -= (camera.right * (camera.speed * delta_time))
 	update_camera_lookat(camera)
 }
 
 move_camera_left :: proc(camera: ^Camera, delta_time: f32) {
-	camera.position.xz += (camera.right * (camera.speed * delta_time)).xz
+	camera.position += (camera.right * (camera.speed * delta_time))
 	update_camera_lookat(camera)
 }
 

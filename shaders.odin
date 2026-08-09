@@ -79,6 +79,11 @@ shader_set_vec4f :: proc(shader: ^Shader, name: string, a, b, c, d: f32) {
 	gl.Uniform4f(uniformLoc, a, b, c, d)
 }
 
+shader_set_vec3f :: proc(shader: ^Shader, name: string, a, b, c: f32) {
+	uniformLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring(name))
+	gl.Uniform3f(uniformLoc, a, b, c)
+}
+
 compile_shader :: proc(src: []byte, shaderType: u32) -> (u32, i32, string) {
 	cstr: cstring = cstring(raw_data(src))
 	shader := gl.CreateShader(shaderType)
