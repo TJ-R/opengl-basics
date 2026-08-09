@@ -1,4 +1,5 @@
 package main
+import "core:fmt"
 import "core:math/linalg"
 
 Camera :: struct {
@@ -43,12 +44,12 @@ init_camera :: proc(camera: ^Camera) {
 	camera.up = linalg.cross(camera.direction, camera.right)
 
 	// This does a lot of the work for us that I did above
-	camera.lookat = linalg.matrix4_look_at_f32(
-		camera.position,
-		camera.position + camera.front,
-		linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}),
-	)
-
+	// camera.lookat = linalg.matrix4_look_at_f32(
+	// 	camera.position,
+	// 	camera.position + camera.front,
+	// 	linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}),
+	// )
+	update_camera_lookat(camera)
 	update_camera_pitch_yaw(camera)
 }
 
@@ -116,9 +117,62 @@ update_camera_pitch_yaw :: proc(camera: ^Camera) {
 }
 
 update_camera_lookat :: proc(camera: ^Camera) {
-	camera.lookat = linalg.matrix4_look_at_f32(
+	fmt.printf("Position: %2.2f\n", camera.position)
+	fmt.printf("Front: %2.2f\n", camera.front)
+	fmt.printf("Target: %2.2f\n", camera.position + camera.front)
+
+	// camera.lookat = linalg.matrix4_look_at_f32(
+	// 	camera.position,
+	// 	camera.position + camera.front,
+	// 	{f32(0.0), 1.0, 0.0},
+	// )
+
+	camera.lookat = custom_lookat_matrix4f32(
 		camera.position,
 		camera.position + camera.front,
 		{f32(0.0), 1.0, 0.0},
 	)
+}
+
+custom_lookat_matrix4f32 :: proc(position, target, up: linalg.Vector3f32) -> linalg.Matrix4f32 {
+	lookAt: linalg.Matrix4f32
+
+	direction := linalg.normalize(position - target)
+	right := linalg.cross(linalg.Vector3f32({f32(0.0), f32(1.0), f32(0.0)}), direction).xyz
+
+	// I manually transposed this
+	lookAt = {
+		right.x,
+		right.y,
+		right.z,
+		0,
+		up.x,
+		up.y,
+		up.z,
+		0,
+		direction.x,
+		direction.y,
+		direction.z,
+		0,
+		0,
+		0,
+		0,
+		1,
+	}
+
+
+	// Negated
+	positionTransform := linalg.MATRIX4F32_IDENTITY
+	positionTransform[0][3] -= position.x
+	positionTransform[1][3] -= position.y
+	positionTransform[2][3] -= position.z
+
+	lookAt = positionTransform
+
+	// Currenly the camera position
+	// to move the objects with to the view
+	// I need to inverse the position and rotation
+	// which is transponsing the matrix
+
+	return linalg.transpose(lookAt)
 }
