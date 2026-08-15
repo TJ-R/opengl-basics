@@ -108,48 +108,49 @@ main :: proc() {
 	// 	{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
 	// }
 
-	vertices := [108]f32 {
-		-0.5, -0.5, -0.5,  
-		 0.5, -0.5, -0.5,  
-		 0.5,  0.5, -0.5,  
-		 0.5,  0.5, -0.5, 
-		-0.5,  0.5, -0.5,  
-		-0.5, -0.5, -0.5,  
+	vertices := [216]f32 {
+		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+		 0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 
+		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
+		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
+		-0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
+		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 
 
-		-0.5, -0.5,  0.5, 
-		 0.5, -0.5,  0.5,  
-		 0.5,  0.5,  0.5,  
-		 0.5,  0.5,  0.5,  
-		-0.5,  0.5,  0.5,  
-		-0.5, -0.5,  0.5,  
+		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
+		 0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
+		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
+		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
+		-0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
+		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
 
-		-0.5,  0.5,  0.5, 
-		-0.5,  0.5, -0.5,  
-		-0.5, -0.5, -0.5,  
-		-0.5, -0.5, -0.5,  
-		-0.5, -0.5,  0.5,  
-		-0.5,  0.5,  0.5,  
+		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+		-0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
+		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+		-0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
+		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
 
-		 0.5,  0.5,  0.5,  
-		 0.5,  0.5, -0.5,  
-		 0.5, -0.5, -0.5,  
-		 0.5, -0.5, -0.5,  
-		 0.5, -0.5,  0.5,  
-		 0.5,  0.5,  0.5,  
+		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+		 0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
+		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+		 0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
+		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
 
-		-0.5, -0.5, -0.5,  
-		 0.5, -0.5, -0.5,  
-		 0.5, -0.5,  0.5,  
-		 0.5, -0.5,  0.5,  
-		-0.5, -0.5,  0.5,  
-		-0.5, -0.5, -0.5,  
+		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+		 0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+		-0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
 
-		-0.5,  0.5, -0.5,  
-		 0.5,  0.5, -0.5,  
-		 0.5,  0.5,  0.5,  
-		 0.5,  0.5,  0.5,  
-		-0.5,  0.5,  0.5,  
-		-0.5,  0.5, -0.5,  	}
+		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+		 0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+		-0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0
+	}
 
 	// odinfmt: enable
 	// Defining Vertex Buffer Object
@@ -170,8 +171,10 @@ main :: proc() {
 	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices[:]), gl.STATIC_DRAW)
 
 	// 3. Set Vertext Attribute Pointer
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
+	gl.EnableVertexAttribArray(1)
 
 	// Unbinding from ARRAY_BUFFER can do this since VAO is already tracking
 	// the VBO2
@@ -180,17 +183,19 @@ main :: proc() {
 	// could unbind the VAO but just am not doing it. To do it gl.BindVertexArray(0)
 	gl.BindVertexArray(0)
 
-	object_shader: Shader
-	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
-	use_shader(&object_shader)
-	shader_set_vec3f(&object_shader, "objectColor", 1.0, 0.5, 0.31) // coral object
-	shader_set_vec3f(&object_shader, "lightColor", 1.0, 1.0, 1.0) // white light
 
 	light_src_shader: Shader
 	init_shader(&light_src_shader, "./shaders/light_source.vert", "./shaders/light_source.frag")
 	use_shader(&light_src_shader)
 	light_src_pos: linalg.Vector3f32
 	light_src_pos = {1.2, 1.0, 2.0}
+
+	object_shader: Shader
+	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
+	use_shader(&object_shader)
+	shader_set_vec3f(&object_shader, "objectColor", 1.0, 0.5, 0.31) // coral object
+	shader_set_vec3f(&object_shader, "lightColor", 1.0, 1.0, 1.0) // white light
+	shader_set_vec3f(&object_shader, "lightPos", light_src_pos.x, light_src_pos.y, light_src_pos.z)
 
 
 	// Wireframe mode uncomment below
