@@ -183,20 +183,16 @@ main :: proc() {
 	// could unbind the VAO but just am not doing it. To do it gl.BindVertexArray(0)
 	gl.BindVertexArray(0)
 
+	camera: Camera
+	init_camera(&camera)
 
 	light_src_shader: Shader
 	init_shader(&light_src_shader, "./shaders/light_source.vert", "./shaders/light_source.frag")
-	use_shader(&light_src_shader)
 	light_src_pos: linalg.Vector3f32
 	light_src_pos = {1.2, 1.0, 2.0}
 
 	object_shader: Shader
 	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
-	use_shader(&object_shader)
-	shader_set_vec3f(&object_shader, "objectColor", 1.0, 0.5, 0.31) // coral object
-	shader_set_vec3f(&object_shader, "lightColor", 1.0, 1.0, 1.0) // white light
-	shader_set_vec3f(&object_shader, "lightPos", light_src_pos.x, light_src_pos.y, light_src_pos.z)
-
 
 	// Wireframe mode uncomment below
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -205,8 +201,6 @@ main :: proc() {
 	running := true
 	dragging := false
 
-	camera: Camera
-	init_camera(&camera)
 
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
@@ -292,9 +286,26 @@ main :: proc() {
 		use_shader(&object_shader)
 
 		model = linalg.MATRIX4F32_IDENTITY
-		shader_set_mat4f32(&light_src_shader, "model", model)
-		shader_set_mat4f32(&light_src_shader, "view", view)
-		shader_set_mat4f32(&light_src_shader, "projection", projection)
+		shader_set_mat4f32(&object_shader, "model", model)
+		shader_set_mat4f32(&object_shader, "view", view)
+		shader_set_mat4f32(&object_shader, "projection", projection)
+		shader_set_vec3f(&object_shader, "objectColor", 1.0, 0.5, 0.31) // coral object
+		shader_set_vec3f(&object_shader, "lightColor", 1.0, 1.0, 1.0) // white light
+		shader_set_vec3f(
+			&object_shader,
+			"lightPos",
+			light_src_pos.x,
+			light_src_pos.y,
+			light_src_pos.z,
+		)
+		shader_set_vec3f(
+			&object_shader,
+			"viewPos",
+			camera.position.x,
+			camera.position.y,
+			camera.position.z,
+		)
+
 
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 

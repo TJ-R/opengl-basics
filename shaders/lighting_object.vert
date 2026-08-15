@@ -12,6 +12,10 @@ uniform mat4 projection;
 void main()
 {
 	gl_Position = projection * view * model * vec4(aPos, 1.0f);
-	Normal = aNormal;
 	FragPos = vec3(model * vec4(aPos, 1.0)); // World Space Coords
+
+	// Inversion is costly in shader. Should calculate the normal matrix
+	// on CPU rather than on the GPU
+	// This is for putting a normal in world space
+	Normal = mat3(transpose(inverse(model))) * aNormal;
 }
