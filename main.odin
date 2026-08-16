@@ -262,10 +262,12 @@ main :: proc() {
 		light_src_pos: linalg.Vector3f32
 		light_src_pos = {0.0, 1.2, 0.0}
 
+		light_src_pos.x = 1.0 + (2 * linalg.sin(timeValue))
+		light_src_pos.y = linalg.sin(timeValue / 2.0) * 1.0
+
+
 		use_shader(&light_src_shader)
 		model := linalg.MATRIX4F32_IDENTITY
-		light_src_pos.x = (2 * linalg.cos(timeValue))
-		light_src_pos.z = (2 * linalg.sin(timeValue))
 		model *= linalg.matrix4_translate_f32(light_src_pos)
 		model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
 
