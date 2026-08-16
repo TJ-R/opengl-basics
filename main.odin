@@ -63,7 +63,6 @@ main :: proc() {
 		return
 	}
 
-
 	fmt.println("[Debug] Window Initialized")
 
 	// Creating the ctx for OpenGL based on SDL's window
@@ -188,8 +187,6 @@ main :: proc() {
 
 	light_src_shader: Shader
 	init_shader(&light_src_shader, "./shaders/light_source.vert", "./shaders/light_source.frag")
-	light_src_pos: linalg.Vector3f32
-	light_src_pos = {1.2, 1.0, 2.0}
 
 	object_shader: Shader
 	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
@@ -262,8 +259,13 @@ main :: proc() {
 
 		gl.BindVertexArray(lightVAO)
 
+		light_src_pos: linalg.Vector3f32
+		light_src_pos = {0.0, 1.2, 0.0}
+
 		use_shader(&light_src_shader)
 		model := linalg.MATRIX4F32_IDENTITY
+		light_src_pos.x = (2 * linalg.cos(timeValue))
+		light_src_pos.z = (2 * linalg.sin(timeValue))
 		model *= linalg.matrix4_translate_f32(light_src_pos)
 		model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
 
