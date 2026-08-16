@@ -286,6 +286,8 @@ main :: proc() {
 		use_shader(&object_shader)
 
 		model = linalg.MATRIX4F32_IDENTITY
+
+		// View space light source
 		shader_set_mat4f32(&object_shader, "model", model)
 		shader_set_mat4f32(&object_shader, "view", view)
 		shader_set_mat4f32(&object_shader, "projection", projection)
