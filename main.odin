@@ -289,15 +289,6 @@ main :: proc() {
 		shader_set_mat4f32(&object_shader, "model", model)
 		shader_set_mat4f32(&object_shader, "view", view)
 		shader_set_mat4f32(&object_shader, "projection", projection)
-		shader_set_vec3f(&object_shader, "objectColor", 1.0, 0.5, 0.31) // coral object
-		shader_set_vec3f(&object_shader, "lightColor", 1.0, 1.0, 1.0) // white light
-		shader_set_vec3f(
-			&object_shader,
-			"lightPos",
-			light_src_pos.x,
-			light_src_pos.y,
-			light_src_pos.z,
-		)
 		shader_set_vec3f(
 			&object_shader,
 			"viewPos",
@@ -308,7 +299,17 @@ main :: proc() {
 		shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
-		shader_set_float(&object_shader, "material.ambient", 32.0)
+		shader_set_float(&object_shader, "material.shininess", 32.0)
+		shader_set_vec3f(
+			&object_shader,
+			"light.position",
+			light_src_pos.x,
+			light_src_pos.y,
+			light_src_pos.z,
+		)
+		shader_set_vec3f(&object_shader, "light.ambient", 0.2, 0.2, 0.2)
+		shader_set_vec3f(&object_shader, "light.diffuse", 0.5, 0.5, 0.5)
+		shader_set_vec3f(&object_shader, "light.specural", 1.0, 1.0, 1.0)
 
 
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
