@@ -252,7 +252,7 @@ main :: proc() {
 		process_continuous_input(&camera, delta_time, keyState)
 
 		// Sets the color of the screen durning the clear screen
-		// gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		// Clears the screen using the Clear Color
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -307,9 +307,45 @@ main :: proc() {
 			light_src_pos.y,
 			light_src_pos.z,
 		)
-		shader_set_vec3f(&object_shader, "light.ambient", 0.2, 0.2, 0.2)
-		shader_set_vec3f(&object_shader, "light.diffuse", 0.5, 0.5, 0.5)
-		shader_set_vec3f(&object_shader, "light.specural", 1.0, 1.0, 1.0)
+
+		// Light Settings
+		lightColor: [3]f32
+		lightColor[0] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 2.0)
+		lightColor[1] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 0.7)
+		lightColor[2] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 1.3)
+		fmt.println(lightColor)
+
+		ambientColor: [3]f32
+		ambientColor = lightColor * 0.2 // strength
+		fmt.println(ambientColor)
+
+		diffuseColor: [3]f32
+		diffuseColor = lightColor * 0.5 // strength
+		fmt.println(diffuseColor)
+		fmt.println()
+
+
+		shader_set_vec3f(
+			&object_shader,
+			"light.ambient",
+			ambientColor.x,
+			ambientColor.y,
+			ambientColor.z,
+		)
+		shader_set_vec3f(
+			&object_shader,
+			"light.diffuse",
+			diffuseColor.x,
+			diffuseColor.y,
+			diffuseColor.z,
+		)
+		shader_set_vec3f(
+			&object_shader,
+			"light.specural",
+			lightColor.x,
+			lightColor.y,
+			lightColor.z,
+		)
 
 
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
