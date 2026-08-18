@@ -280,6 +280,16 @@ main :: proc() {
 		shader_set_mat4f32(&light_src_shader, "model", model)
 		shader_set_mat4f32(&light_src_shader, "view", view)
 		shader_set_mat4f32(&light_src_shader, "projection", projection)
+
+		// Light Settings
+		lightColor: [3]f32
+		lightColor[0] = linalg.sin(timeValue * 1.8)
+		lightColor[1] = linalg.sin(timeValue * .8)
+		lightColor[2] = linalg.sin(timeValue * 1.2)
+
+		// Setting the light cubes material colors
+		shader_set_vec3f(&light_src_shader, "ambient", lightColor)
+
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 
@@ -308,21 +318,12 @@ main :: proc() {
 			light_src_pos.z,
 		)
 
-		// Light Settings
-		lightColor: [3]f32
-		lightColor[0] = linalg.sin(timeValue * 1.8)
-		lightColor[1] = linalg.sin(timeValue * .8)
-		lightColor[2] = linalg.sin(timeValue * 1.2)
-		fmt.println(lightColor)
-
+		// Use the light settings of the src_cube to shine on object
 		ambientColor: [3]f32
 		ambientColor = lightColor * 0.2 // strength
-		fmt.println(ambientColor)
 
 		diffuseColor: [3]f32
 		diffuseColor = lightColor * 0.5 // strength
-		fmt.println(diffuseColor)
-		fmt.println()
 
 		shader_set_vec3f(
 			&object_shader,
