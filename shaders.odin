@@ -80,9 +80,20 @@ shader_set_vec4f :: proc(shader: ^Shader, name: string, a, b, c, d: f32) {
 	gl.Uniform4f(uniformLoc, a, b, c, d)
 }
 
-shader_set_vec3f :: proc(shader: ^Shader, name: string, a, b, c: f32) {
+shader_set_vec3f_cords :: proc(shader: ^Shader, name: string, a, b, c: f32) {
 	uniformLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring(name))
 	gl.Uniform3f(uniformLoc, a, b, c)
+}
+
+shader_set_vec3f_vec :: proc(shader: ^Shader, name: string, vec: [3]f32) {
+	uniformLoc := gl.GetUniformLocation(shader.ID, strings.clone_to_cstring(name))
+	gl.Uniform3f(uniformLoc, vec.x, vec.y, vec.z)
+}
+
+// Overload of the above two
+shader_set_vec3f :: proc {
+	shader_set_vec3f_cords,
+	shader_set_vec3f_vec,
 }
 
 shader_set_mat4f32 :: proc(shader: ^Shader, name: string, mat: linalg.Matrix4f32) {

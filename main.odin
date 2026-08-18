@@ -296,6 +296,10 @@ main :: proc() {
 			camera.position.y,
 			camera.position.z,
 		)
+		// shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
+		// shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
+		// shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
+		// shader_set_float(&object_shader, "material.shininess", 32.0)
 		shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
