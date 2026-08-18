@@ -296,10 +296,6 @@ main :: proc() {
 			camera.position.y,
 			camera.position.z,
 		)
-		// shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
-		// shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
-		// shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
-		// shader_set_float(&object_shader, "material.shininess", 32.0)
 		shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
 		shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
@@ -314,9 +310,9 @@ main :: proc() {
 
 		// Light Settings
 		lightColor: [3]f32
-		lightColor[0] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 2.0)
-		lightColor[1] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 0.7)
-		lightColor[2] = linalg.sin((f32(sdl.GetTicks()) / 1000.0) * 1.3)
+		lightColor[0] = linalg.sin(timeValue * 1.8)
+		lightColor[1] = linalg.sin(timeValue * .8)
+		lightColor[2] = linalg.sin(timeValue * 1.2)
 		fmt.println(lightColor)
 
 		ambientColor: [3]f32
@@ -327,7 +323,6 @@ main :: proc() {
 		diffuseColor = lightColor * 0.5 // strength
 		fmt.println(diffuseColor)
 		fmt.println()
-
 
 		shader_set_vec3f(
 			&object_shader,
