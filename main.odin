@@ -5,6 +5,7 @@ import "core:fmt"
 import "core:math/linalg"
 import gl "vendor:OpenGL"
 import sdl "vendor:sdl3"
+import stbi "vendor:stb/image"
 
 /*
 * Really long breakdown of my understanding of how this seems to work
@@ -87,6 +88,53 @@ main :: proc() {
 	shader: Shader
 	init_shader(&shader, "./shaders/shader.vert", "./shaders/shader.frag")
 
+	/* ---------------- TEXTURE INIT ---------------- */
+	// 0.0 is at bottom for openGl not top
+	stbi.set_flip_vertically_on_load(1)
+
+	diffuseMap: u32
+	gl.GenTextures(1, &diffuseMap)
+	gl.BindTexture(gl.TEXTURE_2D, diffuseMap)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	map_width, map_height, nrChannels: i32
+	diffuse_map_data: [^]byte = stbi.load(
+		"textures/container2.png",
+		&map_width,
+		&map_height,
+		&nrChannels,
+		0,
+	)
+
+	if (diffuse_map_data != nil) {
+		// This is where we dump our data into
+		// the TEXTURE_2D buffer it seems i.e. whatever location
+		// is currently bound to the buffer which happens to be the u32 of use map
+		gl.TexImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.RGB,
+			map_width,
+			map_height,
+			0,
+			gl.RGB,
+			gl.UNSIGNED_BYTE,
+			diffuse_map_data,
+		)
+
+		gl.GenerateMipmap(gl.TEXTURE_2D)
+	} else {
+		fmt.println("[ERROR] Failed to load diffuse map data.")
+	}
+
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	stbi.image_free(diffuse_map_data)
+
+
 	/* ---------------- VERTEX DATA INIT ---------------- */
 
 
@@ -108,48 +156,49 @@ main :: proc() {
 	// 	{-0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0}, // Top Left
 	// }
 
-	vertices := [216]f32 {
-		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-		 0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 
-		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
-		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
-		-0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 
-		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 
+	vertices := [288]f32 {
+		// pos			   // normals       // tex
+		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 0.0, 0.0,
+		 0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 1.0, 0.0,
+		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 1.0, 1.0,
+		 0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 1.0, 1.0,
+		-0.5,  0.5, -0.5,  0.0,  0.0, -1.0, 0.0, 1.0, 
+		-0.5, -0.5, -0.5,  0.0,  0.0, -1.0, 0.0, 0.0,
 
-		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
-		 0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
-		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
-		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
-		-0.5,  0.5,  0.5,  0.0,  0.0, 1.0,
-		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0,
+		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0, 0.0, 0.0,
+		 0.5, -0.5,  0.5,  0.0,  0.0, 1.0, 1.0, 0.0,
+		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0, 1.0, 1.0,
+		 0.5,  0.5,  0.5,  0.0,  0.0, 1.0, 1.0, 1.0,
+		-0.5,  0.5,  0.5,  0.0,  0.0, 1.0, 0.0, 1.0,
+		-0.5, -0.5,  0.5,  0.0,  0.0, 1.0, 0.0, 0.0,
 
-		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
-		-0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
-		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-		-0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
-		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0, 1.0, 0.0,
+		-0.5,  0.5, -0.5, -1.0,  0.0,  0.0, 1.0, 1.0,
+		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0, 0.0, 1.0,
+		-0.5, -0.5, -0.5, -1.0,  0.0,  0.0, 0.0, 1.0,
+		-0.5, -0.5,  0.5, -1.0,  0.0,  0.0, 0.0, 0.0,
+		-0.5,  0.5,  0.5, -1.0,  0.0,  0.0, 1.0, 0.0,
 
-		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
-		 0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
-		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-		 0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
-		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0, 1.0, 0.0,
+		 0.5,  0.5, -0.5,  1.0,  0.0,  0.0, 1.0, 1.0,
+		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0, 0.0, 1.0,
+		 0.5, -0.5, -0.5,  1.0,  0.0,  0.0, 0.0, 1.0,
+		 0.5, -0.5,  0.5,  1.0,  0.0,  0.0, 0.0, 0.0,
+		 0.5,  0.5,  0.5,  1.0,  0.0,  0.0, 1.0, 0.0,
 
-		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-		 0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-		-0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0, 0.0, 1.0,
+		 0.5, -0.5, -0.5,  0.0, -1.0,  0.0, 1.0, 1.0,
+		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0, 1.0, 0.0,
+		 0.5, -0.5,  0.5,  0.0, -1.0,  0.0, 1.0, 0.0,
+		-0.5, -0.5,  0.5,  0.0, -1.0,  0.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5,  0.0, -1.0,  0.0, 0.0, 1.0,
 
-		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-		 0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-		-0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0
+		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0, 0.0, 1.0,
+		 0.5,  0.5, -0.5,  0.0,  1.0,  0.0, 1.0, 1.0,
+		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0, 1.0, 0.0,
+		 0.5,  0.5,  0.5,  0.0,  1.0,  0.0, 1.0, 0.0,
+		-0.5,  0.5,  0.5,  0.0,  1.0,  0.0, 0.0, 0.0,
+		-0.5,  0.5, -0.5,  0.0,  1.0,  0.0, 0.0, 1.0
 	}
 
 	// odinfmt: enable
@@ -171,10 +220,12 @@ main :: proc() {
 	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), raw_data(vertices[:]), gl.STATIC_DRAW)
 
 	// 3. Set Vertext Attribute Pointer
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), uintptr(0))
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), uintptr(0))
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 3 * size_of(f32))
+	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32))
 	gl.EnableVertexAttribArray(0)
 	gl.EnableVertexAttribArray(1)
+	gl.EnableVertexAttribArray(2)
 
 	// Unbinding from ARRAY_BUFFER can do this since VAO is already tracking
 	// the VBO2
@@ -285,6 +336,10 @@ main :: proc() {
 
 		use_shader(&object_shader)
 
+		// Setting active textures and binding
+		gl.ActiveTexture(gl.TEXTURE0)
+		gl.BindTexture(gl.TEXTURE_2D, diffuseMap)
+
 		model = linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4f32(&object_shader, "model", model)
 		shader_set_mat4f32(&object_shader, "view", view)
@@ -296,8 +351,7 @@ main :: proc() {
 			camera.position.y,
 			camera.position.z,
 		)
-		shader_set_vec3f(&object_shader, "material.ambient", 1.0, 0.5, 0.31)
-		shader_set_vec3f(&object_shader, "material.diffuse", 1.0, 0.5, 0.31)
+		shader_set_int(&object_shader, "material.diffuse", 0) // using texture0
 		shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
 		shader_set_float(&object_shader, "material.shininess", 32.0)
 		shader_set_vec3f(
@@ -310,19 +364,17 @@ main :: proc() {
 
 		// Light Settings
 		lightColor: [3]f32
-		lightColor[0] = linalg.sin(timeValue * 1.8)
-		lightColor[1] = linalg.sin(timeValue * .8)
-		lightColor[2] = linalg.sin(timeValue * 1.2)
-		fmt.println(lightColor)
+		// lightColor[0] = linalg.sin(timeValue * 1.8)
+		// lightColor[1] = linalg.sin(timeValue * .8)
+		// lightColor[2] = linalg.sin(timeValue * 1.2)
+		lightColor.xyz = 1.0
+
 
 		ambientColor: [3]f32
 		ambientColor = lightColor * 0.2 // strength
-		fmt.println(ambientColor)
 
 		diffuseColor: [3]f32
 		diffuseColor = lightColor * 0.5 // strength
-		fmt.println(diffuseColor)
-		fmt.println()
 
 		shader_set_vec3f(
 			&object_shader,

@@ -1,9 +1,11 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoord;
 
 out vec3 Normal;
 out vec3 FragPos;
+out vec2 TexCoords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -18,4 +20,5 @@ void main()
 	// on CPU rather than on the GPU
 	// This is for putting a normal in world space
 	Normal = mat3(transpose(inverse(model))) * aNormal;
+	TexCoords = aTexCoord;
 }
