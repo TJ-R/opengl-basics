@@ -117,11 +117,11 @@ main :: proc() {
 		gl.TexImage2D(
 			gl.TEXTURE_2D,
 			0,
-			gl.RGB,
+			gl.RGBA,
 			map_width,
 			map_height,
 			0,
-			gl.RGB,
+			gl.RGBA,
 			gl.UNSIGNED_BYTE,
 			diffuse_map_data,
 		)
