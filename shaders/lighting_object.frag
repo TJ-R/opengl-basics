@@ -2,7 +2,7 @@
 
 struct Material {
     sampler2D diffuse;
-    vec3 specural;
+    sampler2D specural;
     float shininess;
 };
 
@@ -46,7 +46,7 @@ void main() {
 
     // 32 is the shininess of the object
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specural = (material.specural * spec) * light.specural;
+    vec3 specural = vec3(texture(material.specural, TexCoords)) * spec * light.specural;
 
     vec3 resColor = ambient + diffuse + specural;
     FragColor = vec4(resColor, 1.0);

@@ -5,7 +5,6 @@ import "core:fmt"
 import "core:math/linalg"
 import gl "vendor:OpenGL"
 import sdl "vendor:sdl3"
-import stbi "vendor:stb/image"
 
 /*
 * Really long breakdown of my understanding of how this seems to work
@@ -90,49 +89,8 @@ main :: proc() {
 
 	/* ---------------- TEXTURE INIT ---------------- */
 	// 0.0 is at bottom for openGl not top
-	stbi.set_flip_vertically_on_load(1)
-
-	diffuseMap: u32
-	gl.GenTextures(1, &diffuseMap)
-	gl.BindTexture(gl.TEXTURE_2D, diffuseMap)
-
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-
-	map_width, map_height, nrChannels: i32
-	diffuse_map_data: [^]byte = stbi.load(
-		"textures/container2.png",
-		&map_width,
-		&map_height,
-		&nrChannels,
-		0,
-	)
-
-	if (diffuse_map_data != nil) {
-		// This is where we dump our data into
-		// the TEXTURE_2D buffer it seems i.e. whatever location
-		// is currently bound to the buffer which happens to be the u32 of use map
-		gl.TexImage2D(
-			gl.TEXTURE_2D,
-			0,
-			gl.RGBA,
-			map_width,
-			map_height,
-			0,
-			gl.RGBA,
-			gl.UNSIGNED_BYTE,
-			diffuse_map_data,
-		)
-
-		gl.GenerateMipmap(gl.TEXTURE_2D)
-	} else {
-		fmt.println("[ERROR] Failed to load diffuse map data.")
-	}
-
-	gl.BindTexture(gl.TEXTURE_2D, 0)
-	stbi.image_free(diffuse_map_data)
+	diffuse_map_tex := load_texture("./textures/container2.png")
+	specular_map_tex := load_texture("./textures/container2_specular.png")
 
 
 	/* ---------------- VERTEX DATA INIT ---------------- */
@@ -303,7 +261,7 @@ main :: proc() {
 		process_continuous_input(&camera, delta_time, keyState)
 
 		// Sets the color of the screen durning the clear screen
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		// Clears the screen using the Clear Color
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -338,7 +296,9 @@ main :: proc() {
 
 		// Setting active textures and binding
 		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, diffuseMap)
+		gl.BindTexture(gl.TEXTURE_2D, diffuse_map_tex)
+		gl.ActiveTexture(gl.TEXTURE1)
+		gl.BindTexture(gl.TEXTURE_2D, specular_map_tex)
 
 		model = linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4f32(&object_shader, "model", model)
@@ -352,7 +312,7 @@ main :: proc() {
 			camera.position.z,
 		)
 		shader_set_int(&object_shader, "material.diffuse", 0) // using texture0
-		shader_set_vec3f(&object_shader, "material.specural", 0.5, 0.5, 0.5)
+		shader_set_int(&object_shader, "material.specural", 1) // using texture1
 		shader_set_float(&object_shader, "material.shininess", 32.0)
 		shader_set_vec3f(
 			&object_shader,
