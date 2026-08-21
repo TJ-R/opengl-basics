@@ -3,6 +3,7 @@
 struct Material {
     sampler2D diffuse;
     sampler2D specural;
+    sampler2D emission;
     float shininess;
 };
 
@@ -26,6 +27,7 @@ uniform Light light;
 void main() {
     // ambient
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+    vec3 emission = vec3(texture(material.emission, TexCoords));
 
     // diffuse
     /* Extra Comments on Diffuse */
@@ -48,6 +50,6 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specural = vec3(texture(material.specural, TexCoords)) * spec * light.specural;
 
-    vec3 resColor = ambient + diffuse + specural;
+    vec3 resColor = ambient + diffuse + specural + emission;
     FragColor = vec4(resColor, 1.0);
 }

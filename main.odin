@@ -91,6 +91,7 @@ main :: proc() {
 	// 0.0 is at bottom for openGl not top
 	diffuse_map_tex := load_texture("./textures/container2.png")
 	specular_map_tex := load_texture("./textures/container2_specular.png")
+	emission_map_tex := load_texture("./textures/matrix.jpg")
 
 
 	/* ---------------- VERTEX DATA INIT ---------------- */
@@ -299,6 +300,8 @@ main :: proc() {
 		gl.BindTexture(gl.TEXTURE_2D, diffuse_map_tex)
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, specular_map_tex)
+		gl.ActiveTexture(gl.TEXTURE2)
+		gl.BindTexture(gl.TEXTURE_2D, emission_map_tex)
 
 		model = linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4f32(&object_shader, "model", model)
@@ -313,6 +316,7 @@ main :: proc() {
 		)
 		shader_set_int(&object_shader, "material.diffuse", 0) // using texture0
 		shader_set_int(&object_shader, "material.specural", 1) // using texture1
+		shader_set_int(&object_shader, "material.emission", 2) // using texture2
 		shader_set_float(&object_shader, "material.shininess", 32.0)
 		shader_set_vec3f(
 			&object_shader,
