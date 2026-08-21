@@ -90,7 +90,7 @@ main :: proc() {
 	/* ---------------- TEXTURE INIT ---------------- */
 	// 0.0 is at bottom for openGl not top
 	diffuse_map_tex := load_texture("./textures/container2.png")
-	specular_map_tex := load_texture("./textures/container2_specular.png")
+	specular_map_tex := load_texture("./textures/lighting_maps_specular_color.png")
 
 
 	/* ---------------- VERTEX DATA INIT ---------------- */
