@@ -324,17 +324,16 @@ main :: proc() {
 
 		// Light Settings
 		lightColor: [3]f32
-		// lightColor[0] = linalg.sin(timeValue * 1.8)
-		// lightColor[1] = linalg.sin(timeValue * .8)
-		// lightColor[2] = linalg.sin(timeValue * 1.2)
-		lightColor.xyz = 1.0
-
+		lightColor[0] = 1.0
+		lightColor[1] = 1.0
+		lightColor[2] = 1.0
+		// lightColor.xyz = 1.0
 
 		ambientColor: [3]f32
-		ambientColor = lightColor * 0.2 // strength
+		ambientColor = lightColor * 0.4 // strength
 
 		diffuseColor: [3]f32
-		diffuseColor = lightColor * 0.5 // strength
+		diffuseColor = lightColor * .2 // strength
 
 		shader_set_vec3f(
 			&object_shader,
