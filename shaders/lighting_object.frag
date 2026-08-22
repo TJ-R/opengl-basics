@@ -27,7 +27,11 @@ uniform Light light;
 void main() {
     // ambient
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-    vec3 emission = vec3(texture(material.emission, TexCoords));
+    
+    // So sign makes it so if it is above 0 then returns 1, 0 returns 0,
+    // an below 0 returns -1. Since my specural map only has true black
+    // in center this should work properly
+    vec3 emission = (1.0 - sign(vec3(texture(material.specural, TexCoords)))) * vec3(texture(material.emission, TexCoords));
 
     // diffuse
     /* Extra Comments on Diffuse */
