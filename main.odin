@@ -202,6 +202,21 @@ main :: proc() {
 
 	object_shader: Shader
 	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
+	
+	//odinfmt: disable
+	cubePositions: [10][3]f32 = {
+		{0.0, 0.0, 0.0},
+		{2.0, 5.0, -15.0},
+		{-1.5, -2.2, -2.5},
+		{-3.8, 2.0, -12.3},
+		{2.4, -0.4, -3.5},
+		{-1.7, 3.0, -7.5},
+		{1.3, -2.0, -2.5},
+		{1.5, 2.0, -2.5},
+		{1.5, 0.2, -1.5},
+		{-1.3, 1.0, -1.5}
+	}
+	//odinfmt: enable
 
 	// Wireframe mode uncomment below
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -209,8 +224,6 @@ main :: proc() {
 	frames := 0
 	running := true
 	dragging := false
-
-
 	// Seems like locking to 60 fixed this on my laptop
 	// WHY? TODO investigate this
 	targeted_fps: u64 = 1000 / 60
@@ -293,7 +306,6 @@ main :: proc() {
 
 
 		use_shader(&object_shader)
-
 		// Setting active textures and binding
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, diffuse_map_tex)
@@ -358,8 +370,16 @@ main :: proc() {
 			lightColor.z,
 		)
 
+		shader_set_vec3f_vec(&object_shader, "light.direction", {-0.2, -1.0, -0.3})
 
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		for i := 0; i < 10; i += 1 {
+			model = linalg.MATRIX4F32_IDENTITY
+			model *= linalg.matrix4_translate_f32(cubePositions[i])
+			angle: f32 = linalg.to_radians(f32(20 * i))
+			model *= linalg.matrix4_rotate_f32(angle, {1.0, 0.3, 0.5})
+			shader_set_mat4f32(&object_shader, "model", model)
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
 
 
 		sdl.GL_SwapWindow(window)

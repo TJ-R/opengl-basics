@@ -7,7 +7,8 @@ struct Material {
 };
 
 struct Light {
-    vec3 position;
+    // vec3 position;
+    vec3 direction; // Light coming from "infintely far away so position does not matter just direction"
     vec3 ambient;
     vec3 diffuse;
     vec3 specural;
@@ -36,7 +37,7 @@ void main() {
     // not sure how norm dot lightDir results in the value and why max 
     // is necessary.
     vec3 norm = normalize(Normal);
-    vec3 lightDirection = normalize(light.position - FragPos); 
+    vec3 lightDirection = normalize(-light.direction); 
     float diff = max(dot(norm, lightDirection), 0.0);
     vec3 diffuse = vec3(texture(material.diffuse, TexCoords)) * diff * light.diffuse;
     //
