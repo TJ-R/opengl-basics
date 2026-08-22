@@ -23,6 +23,7 @@ in vec2 TexCoords;
 uniform vec3 viewPos; // camera position
 uniform Material material;
 uniform Light light;
+uniform float time;
 
 void main() {
     // ambient
@@ -31,7 +32,8 @@ void main() {
     // So sign makes it so if it is above 0 then returns 1, 0 returns 0,
     // an below 0 returns -1. Since my specural map only has true black
     // in center this should work properly
-    vec3 emission = (1.0 - sign(vec3(texture(material.specural, TexCoords)))) * vec3(texture(material.emission, TexCoords));
+    vec3 emission = (1.0 - sign(vec3(texture(material.specural, TexCoords)))) 
+        * vec3(texture(material.emission, TexCoords + vec2(0.0, time * .5)));
 
     // diffuse
     /* Extra Comments on Diffuse */

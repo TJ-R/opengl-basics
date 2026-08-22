@@ -325,6 +325,7 @@ main :: proc() {
 			light_src_pos.y,
 			light_src_pos.z,
 		)
+		shader_set_float(&object_shader, "time", timeValue)
 
 		// Light Settings
 		lightColor: [3]f32
