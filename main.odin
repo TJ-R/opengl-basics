@@ -370,7 +370,13 @@ main :: proc() {
 			lightColor.z,
 		)
 
-		shader_set_vec3f_vec(&object_shader, "light.direction", {-0.2, -1.0, -0.3})
+		// This was for directional light
+		// shader_set_vec3f_vec(&object_shader, "light.direction", {-0.2, -1.0, -0.3})
+
+		// Point Light
+		shader_set_float(&object_shader, "light.constant", 1.0)
+		shader_set_float(&object_shader, "light.linear", 0.09)
+		shader_set_float(&object_shader, "light.quadratic", 0.032)
 
 		for i := 0; i < 10; i += 1 {
 			model = linalg.MATRIX4F32_IDENTITY
