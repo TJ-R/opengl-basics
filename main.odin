@@ -389,7 +389,18 @@ main :: proc() {
 		// NOT light.direction is the calculated value. The result of that
 		// can be directly compared to cutOff since cos(theta) = a dot b when
 		// a and b are both unit vectors
-		shader_set_float(&object_shader, "light.cutOff", linalg.cos(linalg.to_radians(f32(12.5))))
+		shader_set_float(
+			&object_shader,
+			"light.innerCutOff",
+			linalg.cos(linalg.to_radians(f32(12.5))),
+		)
+
+		// Bigger than above
+		shader_set_float(
+			&object_shader,
+			"light.outerCutOff",
+			linalg.cos(linalg.to_radians(f32(17.5))),
+		)
 
 		for i := 0; i < 10; i += 1 {
 			model = linalg.MATRIX4F32_IDENTITY
