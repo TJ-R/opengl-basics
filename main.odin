@@ -374,9 +374,22 @@ main :: proc() {
 		// shader_set_vec3f_vec(&object_shader, "light.direction", {-0.2, -1.0, -0.3})
 
 		// Point Light
-		shader_set_float(&object_shader, "light.constant", 1.0)
-		shader_set_float(&object_shader, "light.linear", 0.09)
-		shader_set_float(&object_shader, "light.quadratic", 0.032)
+		// shader_set_float(&object_shader, "light.constant", 1.0)
+		// shader_set_float(&object_shader, "light.linear", 0.09)
+		// shader_set_float(&object_shader, "light.quadratic", 0.032)
+
+		// Spotlight ("flash light in this case") but could
+		// also use the same idea for a street light straight down
+		shader_set_vec3f_vec(&object_shader, "light.position", camera.position)
+		shader_set_vec3f_vec(&object_shader, "light.direction", camera.direction)
+
+		// Gets the cosine value of the cutoff from the angle
+		// We will compare it with dot product between the spotlight direction
+		// and the light direction. Spot is direction of spotlight. While the light direction
+		// NOT light.direction is the calculated value. The result of that
+		// can be directly compared to cutOff since cos(theta) = a dot b when
+		// a and b are both unit vectors
+		shader_set_float(&object_shader, "light.cutOff", linalg.cos(linalg.to_radians(f32(12.5))))
 
 		for i := 0; i < 10; i += 1 {
 			model = linalg.MATRIX4F32_IDENTITY
