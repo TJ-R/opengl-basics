@@ -298,7 +298,6 @@ main :: proc() {
 		gl.BindVertexArray(lightVAO)
 
 		use_shader(&light_src_shader)
-		model := linalg.MATRIX4F32_IDENTITY
 		view := camera.lookat
 		projection := linalg.MATRIX4F32_IDENTITY
 		projection *= linalg.matrix4_perspective_f32(
@@ -309,6 +308,8 @@ main :: proc() {
 		)
 
 		for i := 0; i < 4; i += 1 {
+
+			model := linalg.MATRIX4F32_IDENTITY
 			model *= linalg.matrix4_translate_f32(pointLightPositions[i])
 			model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
 
@@ -327,7 +328,7 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, specular_map_tex)
 
-		model = linalg.MATRIX4F32_IDENTITY
+		model := linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4f32(&object_shader, "model", model)
 		shader_set_mat4f32(&object_shader, "view", view)
 		shader_set_mat4f32(&object_shader, "projection", projection)
@@ -354,30 +355,29 @@ main :: proc() {
 			pointLightAmbient := pointLightColors[i] * 0.2
 			pointLightDiffuse := pointLightColors[i] * 0.5
 
-
 			shader_set_vec3f(
 				&object_shader,
-				fmt.tprintf("pointLight[%d].position", i),
+				fmt.tprintf("pointLights[%d].position", i),
 				pointLightPositions[i],
 			)
 			shader_set_vec3f(
 				&object_shader,
-				fmt.tprintf("pointLight[%d].ambient", i),
+				fmt.tprintf("pointLights[%d].ambient", i),
 				pointLightAmbient,
 			)
 			shader_set_vec3f(
 				&object_shader,
-				fmt.tprintf("pointLight[%d].diffuse", i),
+				fmt.tprintf("pointLights[%d].diffuse", i),
 				pointLightDiffuse,
 			)
 			shader_set_vec3f(
 				&object_shader,
-				fmt.tprintf("pointLight[%d].specural", i),
+				fmt.tprintf("pointLights[%d].specural", i),
 				pointLightColors[i],
 			)
-			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].constant", i), 1.0)
-			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].linear", i), 0.09)
-			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].quadratic", i), 0.032)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].constant", i), 1.0)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].linear", i), 0.09)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].quadratic", i), 0.032)
 		}
 		// Point light done
 
