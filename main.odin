@@ -287,7 +287,7 @@ main :: proc() {
 		process_continuous_input(&camera, delta_time, keyState)
 
 		// Sets the color of the screen durning the clear screen
-		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
+		// gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		// Clears the screen using the Clear Color
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -376,8 +376,8 @@ main :: proc() {
 				pointLightColors[i],
 			)
 			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].constant", i), 1.0)
-			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].linear", i), 0.09)
-			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].quadratic", i), 0.032)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].linear", i), 0.35)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].quadratic", i), 0.44)
 		}
 		// Point light done
 
@@ -401,14 +401,14 @@ main :: proc() {
 		// a and b are both unit vectors
 		shader_set_float(
 			&object_shader,
-			"spotLight.innerCutOff",
+			"spotLight.innerCutoff",
 			linalg.cos(linalg.to_radians(f32(12.5))),
 		)
 
 		// Bigger than above
 		shader_set_float(
 			&object_shader,
-			"spotLight.outerCutOff",
+			"spotLight.outerCutoff",
 			linalg.cos(linalg.to_radians(f32(17.5))),
 		)
 		// Spot light done

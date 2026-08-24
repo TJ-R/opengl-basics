@@ -93,35 +93,29 @@ vec3 CalcSpotlight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     float epsilon = light.innerCutoff - light.outerCutoff;
     float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
 
-    if (theta > light.outerCutoff) {
-        float diff = max(dot(normal, lightDir), 0.0);
-        
-        vec3 reflectDir = reflect(-lightDir, normal);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float diff = max(dot(normal, lightDir), 0.0);
+    
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
-        vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-        vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-        vec3 specural = light.specural * spec * vec3(texture(material.specural, TexCoords));
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+    vec3 specural = light.specural * spec * vec3(texture(material.specural, TexCoords));
 
-        ambient *= intensity;
-        diffuse *= intensity;
-        specural *= intensity;
+    diffuse *= intensity;
+    specural *= intensity;
 
-        return (ambient + diffuse + specural);
-    } else {
-        vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-        return ambient;
-    }
+    return (ambient + diffuse + specural);
 };
 
 void main() {
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 resColor = vec3(0.0);
-    resColor += CalcDirLight(dirLight, norm, viewDir);
+    // resColor += CalcDirLight(dirLight, norm, viewDir);
 
     for (int i = 0; i < NR_POINT_LIGHTS; i++) {
-        resColor += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+        // resColor += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     }
     resColor = CalcSpotlight(spotLight, norm, FragPos, viewDir);
 
