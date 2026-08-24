@@ -218,16 +218,16 @@ main :: proc() {
 	pointLightPositions: [4][3]f32 = {
 		{0.7,  0.2,  2.0},
 		{2.3, -3.3, -4.0},
-		{-4.0,  2.0, -12.0},
+		{-4.0,  2.0, -11.0},
 		{0.0,  0.0, -3.0}
 	};  
 
 	// All white lights right now
 	pointLightColors: [4][3]f32 = {
-		{1.0, 1.0, 1.0},
-		{1.0, 1.0, 1.0},
-		{1.0, 1.0, 1.0},
-		{1.0, 1.0, 1.0},
+		{0.2, 0.2, 1.0},
+		{0.2, 0.2, 1.0},
+		{0.2, 0.2, 1.0},
+		{0.2, 0.2, 1.0},
 	};  
 	//odinfmt: enable
 
@@ -287,7 +287,7 @@ main :: proc() {
 		process_continuous_input(&camera, delta_time, keyState)
 
 		// Sets the color of the screen durning the clear screen
-		// gl.ClearColor(0.1, 0.1, 0.1, 1.0)
+		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		// Clears the screen using the Clear Color
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -308,7 +308,6 @@ main :: proc() {
 		)
 
 		for i := 0; i < 4; i += 1 {
-
 			model := linalg.MATRIX4F32_IDENTITY
 			model *= linalg.matrix4_translate_f32(pointLightPositions[i])
 			model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
@@ -317,6 +316,7 @@ main :: proc() {
 			shader_set_mat4f32(&light_src_shader, "model", model)
 			shader_set_mat4f32(&light_src_shader, "view", view)
 			shader_set_mat4f32(&light_src_shader, "projection", projection)
+			shader_set_vec3f(&light_src_shader, "cubeColor", pointLightColors[i])
 			gl.DrawArrays(gl.TRIANGLES, 0, 36)
 		}
 
@@ -342,18 +342,20 @@ main :: proc() {
 		// Dir Light
 		shader_set_vec3f_vec(&object_shader, "dirLight.direction", {-0.2, -1.0, -0.3})
 		dirLightColor: [3]f32
-		dirLightColor.xyz = 1.0
+		dirLightColor.xyz = 0.0
 		dirAmbientColor := dirLightColor * 0.2 // strength
 		dirDiffuseColor := dirLightColor * 0.5 // strength
+		dirSpecuralColor := dirLightColor * 1.0
 		shader_set_vec3f(&object_shader, "dirLight.ambient", dirAmbientColor)
 		shader_set_vec3f(&object_shader, "dirLight.diffuse", dirDiffuseColor)
-		shader_set_vec3f(&object_shader, "dirLight.specural", dirLightColor)
+		shader_set_vec3f(&object_shader, "dirLight.specural", dirSpecuralColor)
 		// Dir Done
 
 		// Point Light Property set up for object shader
 		for i := 0; i < 4; i += 1 {
-			pointLightAmbient := pointLightColors[i] * 0.2
-			pointLightDiffuse := pointLightColors[i] * 0.5
+			pointLightAmbient := pointLightColors[i] * 0.0
+			pointLightDiffuse := pointLightColors[i] * 0.8
+			pointLightSpecural := pointLightColors[i] * 1.0
 
 			shader_set_vec3f(
 				&object_shader,
@@ -373,11 +375,11 @@ main :: proc() {
 			shader_set_vec3f(
 				&object_shader,
 				fmt.tprintf("pointLights[%d].specural", i),
-				pointLightColors[i],
+				pointLightSpecural,
 			)
 			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].constant", i), 1.0)
-			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].linear", i), 0.35)
-			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].quadratic", i), 0.44)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].linear", i), 0.045)
+			shader_set_float(&object_shader, fmt.tprintf("pointLights[%d].quadratic", i), 0.0075)
 		}
 		// Point light done
 
@@ -387,11 +389,12 @@ main :: proc() {
 		shader_set_vec3f_vec(&object_shader, "spotLight.direction", camera.direction)
 		spotLightColor: [3]f32
 		spotLightColor.xyz = 1.0
-		spotAmbientColor := spotLightColor * 0.2 // strength
+		spotAmbientColor := spotLightColor * 0.0 // strength
 		spotDiffuseColor := spotLightColor * 0.5 // strength
+		spotSpecuralColor := spotLightColor * 1.0
 		shader_set_vec3f(&object_shader, "spotLight.ambient", spotAmbientColor)
 		shader_set_vec3f(&object_shader, "spotLight.diffuse", spotDiffuseColor)
-		shader_set_vec3f(&object_shader, "spotLight.specural", spotLightColor)
+		shader_set_vec3f(&object_shader, "spotLight.specural", spotSpecuralColor)
 
 		// Gets the cosine value of the cutoff from the angle
 		// We will compare it with dot product between the spotlight direction
