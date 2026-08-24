@@ -197,8 +197,6 @@ main :: proc() {
 
 	light_src_shader: Shader
 	init_shader(&light_src_shader, "./shaders/light_source.vert", "./shaders/light_source.frag")
-	light_src_pos: linalg.Vector3f32
-	light_src_pos = {1.2, 1.0, 2.0}
 
 	object_shader: Shader
 	init_shader(&object_shader, "./shaders/lighting_object.vert", "./shaders/lighting_object.frag")
@@ -216,6 +214,21 @@ main :: proc() {
 		{1.5, 0.2, -1.5},
 		{-1.3, 1.0, -1.5}
 	}
+
+	pointLightPositions: [4][3]f32 = {
+		{0.7,  0.2,  2.0},
+		{2.3, -3.3, -4.0},
+		{-4.0,  2.0, -12.0},
+		{0.0,  0.0, -3.0}
+	};  
+
+	// All white lights right now
+	pointLightColors: [4][3]f32 = {
+		{1.0, 1.0, 1.0},
+		{1.0, 1.0, 1.0},
+		{1.0, 1.0, 1.0},
+		{1.0, 1.0, 1.0},
+	};  
 	//odinfmt: enable
 
 	// Wireframe mode uncomment below
@@ -286,9 +299,6 @@ main :: proc() {
 
 		use_shader(&light_src_shader)
 		model := linalg.MATRIX4F32_IDENTITY
-		model *= linalg.matrix4_translate_f32(light_src_pos)
-		model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
-
 		view := camera.lookat
 		projection := linalg.MATRIX4F32_IDENTITY
 		projection *= linalg.matrix4_perspective_f32(
@@ -298,11 +308,16 @@ main :: proc() {
 			100.0,
 		)
 
-		// Set uniforms
-		shader_set_mat4f32(&light_src_shader, "model", model)
-		shader_set_mat4f32(&light_src_shader, "view", view)
-		shader_set_mat4f32(&light_src_shader, "projection", projection)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		for i := 0; i < 4; i += 1 {
+			model *= linalg.matrix4_translate_f32(pointLightPositions[i])
+			model *= linalg.matrix4_scale_f32({0.3, 0.3, 0.3})
+
+			// Set uniforms
+			shader_set_mat4f32(&light_src_shader, "model", model)
+			shader_set_mat4f32(&light_src_shader, "view", view)
+			shader_set_mat4f32(&light_src_shader, "projection", projection)
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
 
 
 		use_shader(&object_shader)
@@ -316,72 +331,67 @@ main :: proc() {
 		shader_set_mat4f32(&object_shader, "model", model)
 		shader_set_mat4f32(&object_shader, "view", view)
 		shader_set_mat4f32(&object_shader, "projection", projection)
-		shader_set_vec3f(
-			&object_shader,
-			"viewPos",
-			camera.position.x,
-			camera.position.y,
-			camera.position.z,
-		)
+		shader_set_vec3f(&object_shader, "viewPos", camera.position)
 		shader_set_int(&object_shader, "material.diffuse", 0) // using texture0
 		shader_set_int(&object_shader, "material.specural", 1) // using texture1
 		shader_set_float(&object_shader, "material.shininess", 32.0)
-		shader_set_vec3f(
-			&object_shader,
-			"light.position",
-			light_src_pos.x,
-			light_src_pos.y,
-			light_src_pos.z,
-		)
 
-		// Light Settings
-		lightColor: [3]f32
-		// lightColor[0] = linalg.sin(timeValue * 1.8)
-		// lightColor[1] = linalg.sin(timeValue * .8)
-		// lightColor[2] = linalg.sin(timeValue * 1.2)
-		lightColor.xyz = 1.0
+		// Setting up all of the lights 1 dir and 4 point
+
+		// Dir Light
+		shader_set_vec3f_vec(&object_shader, "dirLight.direction", {-0.2, -1.0, -0.3})
+		dirLightColor: [3]f32
+		dirLightColor.xyz = 1.0
+		dirAmbientColor := dirLightColor * 0.2 // strength
+		dirDiffuseColor := dirLightColor * 0.5 // strength
+		shader_set_vec3f(&object_shader, "dirLight.ambient", dirAmbientColor)
+		shader_set_vec3f(&object_shader, "dirLight.diffuse", dirDiffuseColor)
+		shader_set_vec3f(&object_shader, "dirLight.specural", dirLightColor)
+		// Dir Done
+
+		// Point Light Property set up for object shader
+		for i := 0; i < 4; i += 1 {
+			pointLightAmbient := pointLightColors[i] * 0.2
+			pointLightDiffuse := pointLightColors[i] * 0.5
 
 
-		ambientColor: [3]f32
-		ambientColor = lightColor * 0.2 // strength
-
-		diffuseColor: [3]f32
-		diffuseColor = lightColor * 0.5 // strength
-
-		shader_set_vec3f(
-			&object_shader,
-			"light.ambient",
-			ambientColor.x,
-			ambientColor.y,
-			ambientColor.z,
-		)
-		shader_set_vec3f(
-			&object_shader,
-			"light.diffuse",
-			diffuseColor.x,
-			diffuseColor.y,
-			diffuseColor.z,
-		)
-		shader_set_vec3f(
-			&object_shader,
-			"light.specural",
-			lightColor.x,
-			lightColor.y,
-			lightColor.z,
-		)
-
-		// This was for directional light
-		// shader_set_vec3f_vec(&object_shader, "light.direction", {-0.2, -1.0, -0.3})
-
-		// Point Light
-		// shader_set_float(&object_shader, "light.constant", 1.0)
-		// shader_set_float(&object_shader, "light.linear", 0.09)
-		// shader_set_float(&object_shader, "light.quadratic", 0.032)
+			shader_set_vec3f(
+				&object_shader,
+				fmt.tprintf("pointLight[%d].position", i),
+				pointLightPositions[i],
+			)
+			shader_set_vec3f(
+				&object_shader,
+				fmt.tprintf("pointLight[%d].ambient", i),
+				pointLightAmbient,
+			)
+			shader_set_vec3f(
+				&object_shader,
+				fmt.tprintf("pointLight[%d].diffuse", i),
+				pointLightDiffuse,
+			)
+			shader_set_vec3f(
+				&object_shader,
+				fmt.tprintf("pointLight[%d].specural", i),
+				pointLightColors[i],
+			)
+			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].constant", i), 1.0)
+			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].linear", i), 0.09)
+			shader_set_float(&object_shader, fmt.tprintf("pointLight[%d].quadratic", i), 0.032)
+		}
+		// Point light done
 
 		// Spotlight ("flash light in this case") but could
 		// also use the same idea for a street light straight down
-		shader_set_vec3f_vec(&object_shader, "light.position", camera.position)
-		shader_set_vec3f_vec(&object_shader, "light.direction", camera.direction)
+		shader_set_vec3f_vec(&object_shader, "spotLight.position", camera.position)
+		shader_set_vec3f_vec(&object_shader, "spotLight.direction", camera.direction)
+		spotLightColor: [3]f32
+		spotLightColor.xyz = 1.0
+		spotAmbientColor := spotLightColor * 0.2 // strength
+		spotDiffuseColor := spotLightColor * 0.5 // strength
+		shader_set_vec3f(&object_shader, "spotLight.ambient", spotAmbientColor)
+		shader_set_vec3f(&object_shader, "spotLight.diffuse", spotDiffuseColor)
+		shader_set_vec3f(&object_shader, "spotLight.specural", spotLightColor)
 
 		// Gets the cosine value of the cutoff from the angle
 		// We will compare it with dot product between the spotlight direction
@@ -391,16 +401,18 @@ main :: proc() {
 		// a and b are both unit vectors
 		shader_set_float(
 			&object_shader,
-			"light.innerCutOff",
+			"spotLight.innerCutOff",
 			linalg.cos(linalg.to_radians(f32(12.5))),
 		)
 
 		// Bigger than above
 		shader_set_float(
 			&object_shader,
-			"light.outerCutOff",
+			"spotLight.outerCutOff",
 			linalg.cos(linalg.to_radians(f32(17.5))),
 		)
+		// Spot light done
+
 
 		for i := 0; i < 10; i += 1 {
 			model = linalg.MATRIX4F32_IDENTITY
